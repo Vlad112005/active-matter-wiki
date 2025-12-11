@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api';
-import { Unlock, Coins, Diamond, Package, Wrench, Zap, Edit, Plus } from 'lucide-react';
+import { Unlock, Coins, Diamond, Package, Wrench, Zap, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 interface MonolithUnlock {
   id: string;
