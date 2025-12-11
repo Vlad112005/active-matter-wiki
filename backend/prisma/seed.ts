@@ -12,20 +12,20 @@ async function main() {
   await prisma.role.upsert({ where: { name: 'user' }, update: {}, create: { name: 'user', displayName: 'Пользователь', description: 'Обычный пользователь' } });
   console.log('✅ Roles created');
 
-  // 2. Уровни монолита (ТОЛЬКО ALPHA ОТКРЫТ)
+  // 2. Уровни монолита (СОГЛАСНО СКРИНШОТУ)
   const monolithLevels = [
-    { code: 'ALPHA', order: 1, name: 'Уровень допуска: АЛЬФА', nameEn: 'Access Level: ALPHA', requiredTokens: 0, requiredCredits: 0 },
-    { code: 'BETA', order: 2, name: 'Уровень допуска: БЕТА', nameEn: 'Access Level: BETA', requiredTokens: 2400, requiredCredits: null },
-    { code: 'GAMMA', order: 3, name: 'Уровень допуска: ГАММА', nameEn: 'Access Level: GAMMA', requiredTokens: 4800, requiredCredits: null },
-    { code: 'DELTA', order: 4, name: 'Уровень допуска: ДЕЛЬТА', nameEn: 'Access Level: DELTA', requiredTokens: 7200, requiredCredits: null },
-    { code: 'EPSILON', order: 5, name: 'Уровень допуска: ЭПСИЛОН', nameEn: 'Access Level: EPSILON', requiredTokens: 9600, requiredCredits: null },
-    { code: 'DZETA', order: 6, name: 'Уровень допуска: ДЗЕТА', nameEn: 'Access Level: DZETA', requiredTokens: 12000, requiredCredits: null },
-    { code: 'ETA', order: 7, name: 'Уровень допуска: ЭТА', nameEn: 'Access Level: ETA', requiredTokens: 14400, requiredCredits: null },
+    { code: 'ALPHA', order: 1, name: 'Уровень допуска: АЛЬФА', nameEn: 'Access Level: ALPHA', requiredTokens: 100, requiredCredits: 0 },
+    { code: 'BETA', order: 2, name: 'Уровень допуска: БЕТА', nameEn: 'Access Level: BETA', requiredTokens: 500, requiredCredits: 200 },
+    { code: 'GAMMA', order: 3, name: 'Уровень допуска: ГАММА', nameEn: 'Access Level: GAMMA', requiredTokens: 750, requiredCredits: 225 },
+    { code: 'DELTA', order: 4, name: 'Уровень допуска: ДЕЛЬТА', nameEn: 'Access Level: DELTA', requiredTokens: 1300, requiredCredits: 260 },
+    { code: 'EPSILON', order: 5, name: 'Уровень допуска: ЭПСИЛОН', nameEn: 'Access Level: EPSILON', requiredTokens: 2400, requiredCredits: 310 },
+    { code: 'DZETA', order: 6, name: 'Уровень допуска: ДЗЕТА', nameEn: 'Access Level: DZETA', requiredTokens: 4250, requiredCredits: 375 },
+    { code: 'ETA', order: 7, name: 'Уровень допуска: ЭТА', nameEn: 'Access Level: ETA', requiredTokens: 7000, requiredCredits: 475 },
     { code: 'THETA', order: 8, name: 'Уровень допуска: ТЕТА', nameEn: 'Access Level: THETA', requiredTokens: 10800, requiredCredits: 600 },
-    { code: 'IOTA', order: 9, name: 'Уровень допуска: ЙОТА', nameEn: 'Access Level: IOTA', requiredTokens: 16800, requiredCredits: null },
-    { code: 'KAPPA', order: 10, name: 'Уровень допуска: КАППА', nameEn: 'Access Level: KAPPA', requiredTokens: 19200, requiredCredits: null },
-    { code: 'LAMBDA', order: 11, name: 'Уровень допуска: ЛЯМБДА', nameEn: 'Access Level: LAMBDA', requiredTokens: 21600, requiredCredits: null },
-    { code: 'MU', order: 12, name: 'Уровень допуска: МЮ', nameEn: 'Access Level: MU', requiredTokens: 24000, requiredCredits: null },
+    { code: 'IOTA', order: 9, name: 'Уровень допуска: ЙОТА', nameEn: 'Access Level: IOTA', requiredTokens: 15900, requiredCredits: 775 },
+    { code: 'KAPPA', order: 10, name: 'Уровень допуска: КАППА', nameEn: 'Access Level: KAPPA', requiredTokens: 22350, requiredCredits: 1050 },
+    { code: 'LAMBDA', order: 11, name: 'Уровень допуска: ЛЯМБДА', nameEn: 'Access Level: LAMBDA', requiredTokens: 30500, requiredCredits: 1500 },
+    { code: 'MU', order: 12, name: 'Уровень допуска: МЮ', nameEn: 'Access Level: MU', requiredTokens: 40000, requiredCredits: 2200 },
   ];
 
   for (const level of monolithLevels) {
@@ -196,7 +196,7 @@ async function main() {
 
   console.log('✅ Site settings created');
   console.log('🎉 Seed completed!');
-  console.log('📊 Created:', items.length, 'items with correct prices');
+  console.log('📊 Monolith levels updated with correct requirements from screenshot');
 }
 
 main()
