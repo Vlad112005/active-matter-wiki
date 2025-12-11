@@ -1,4 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useSettings } from './context/SettingsContext';
+import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Items from './pages/Items';
@@ -8,8 +10,27 @@ import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Cookies from './pages/Cookies';
+import Maintenance from './pages/Maintenance';
 
 function App() {
+  const { settings, loading } = useSettings();
+  const { user } = useAuthStore();
+
+  // Пока загружаются настройки
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  // Режим тех. работ (не для админов)
+  const isAdmin = user?.role?.name && ['admin', 'founder'].includes(user.role.name);
+  if (settings.maintenance_mode && !isAdmin) {
+    return <Maintenance message={settings.maintenance_message} />;
+  }
+
   return (
     <Routes>
       <Route path="/" element={<Layout />}>

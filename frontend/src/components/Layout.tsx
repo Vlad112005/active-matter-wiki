@@ -1,11 +1,13 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Crown, Shield } from 'lucide-react';
+import { Menu, X, LogOut, User, Crown, Shield, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useSettings } from '../context/SettingsContext';
 
 const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { settings } = useSettings();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -14,6 +16,7 @@ const Layout = () => {
   };
 
   const hasAdminAccess = user?.role?.name && ['moderator', 'admin', 'founder'].includes(user.role.name);
+  const isAdmin = user?.role?.name && ['admin', 'founder'].includes(user.role.name);
 
   const navLinks = [
     { label: 'Главная', path: '/' },
@@ -22,6 +25,22 @@ const Layout = () => {
     { label: 'Гайды', path: '/guides' },
     { label: 'Патчи', path: '/patches' },
   ];
+
+  const gameStatusBadge = () => {
+    const badges: Record<string, { label: string; color: string }> = {
+      alpha: { label: 'ALPHA', color: 'bg-red-500/10 text-red-400 border-red-500/20' },
+      beta: { label: 'BETA', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+      'early-access': { label: 'EA', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+      release: { label: 'v' + settings.game_version, color: 'bg-green-500/10 text-green-400 border-green-500/20' },
+    };
+
+    const badge = badges[settings.game_status] || badges.beta;
+    return (
+      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${badge.color}`}>
+        {badge.label}
+      </span>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0e1a] flex flex-col">
@@ -35,8 +54,11 @@ const Layout = () => {
                 <span className="text-lg">🎮</span>
               </div>
               <div>
-                <span className="font-semibold text-base gradient-text">Active Matter</span>
-                <span className="block text-[10px] text-gray-500 -mt-0.5">Wiki</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-base gradient-text">Active Matter</span>
+                  {gameStatusBadge()}
+                </div>
+                <span className="block text-[10px] text-gray-500 -mt-0.5">Wiki v{settings.site_version}</span>
               </div>
             </Link>
 
@@ -154,12 +176,37 @@ const Layout = () => {
         )}
       </nav>
 
-      {/* Main Content with top padding for fixed navbar */}
+      {/* Объявление */}
+      {settings.announcement && (
+        <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border-b border-cyan-500/20">
+          <div className="container-max py-3">
+            <div className="flex items-center gap-3 text-sm">
+              <AlertCircle className="text-cyan-400 flex-shrink-0" size={18} />
+              <p className="text-cyan-100">{settings.announcement}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Режим тех. работ (для админов) */}
+      {settings.maintenance_mode && isAdmin && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20">
+          <div className="container-max py-2">
+            <div className="flex items-center gap-2 text-xs text-amber-400">
+              <AlertCircle size={14} />
+              <span className="font-medium">Режим тех. работ активен</span>
+              <span className="text-amber-300/80">(видно только вам)</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
       <main className="flex-1 pt-16">
         <Outlet />
       </main>
 
-      {/* Footer - Legal for RU */}
+      {/* Footer */}
       <footer className="border-t border-gray-800/30 bg-[#0f1420]/50 backdrop-blur-xl py-12 mt-auto">
         <div className="container-max">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -168,9 +215,10 @@ const Layout = () => {
               <p className="text-xs text-gray-500 leading-relaxed mb-4">
                 Информационный портал для игры Active Matter с полным каталогом предметов, локаций и гайдов.
               </p>
-              <p className="text-xs text-gray-600">
-                Проект не является официальным и не связан с разработчиками Active Matter.
-              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="badge text-[10px]">Игра: v{settings.game_version}</span>
+                <span className="badge text-[10px]">Сайт: v{settings.site_version}</span>
+              </div>
             </div>
             <div>
               <h4 className="font-medium mb-3 text-sm">Навигация</h4>
