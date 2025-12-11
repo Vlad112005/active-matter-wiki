@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Matter Wiki - Прототип</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e5e7eb;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        nav {
+            background: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .nav-items {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-items a {
+            color: #e5e7eb;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-items a:hover {
+            color: #3b82f6;
+        }
+
+        .nav-items a.active {
+            color: #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 0.25rem;
+        }
+
+        /* Search */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            width: 400px;
+            max-width: 100%;
+        }
+
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: #e5e7eb;
+            width: 100%;
+            outline: none;
+        }
+
+        .search-bar input::placeholder {
+            color: #999;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #1a3a52 0%, #0f2438 100%);
+            border-radius: 12px;
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            border: 1px solid #333;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: #b0b9c3;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab {
+            background: none;
+            border: none;
+            color: #999;
+            padding: 1rem 0;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #e5e7eb;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+
+        /* Items Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #1a3a52, #0f2438);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            overflow: hidden;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .badge.rarity-epic {
+            background: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .badge.rarity-legendary {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .filter-group select {
+            background: #2a2a2a;
+            color: #e5e7eb;
+            border: 1px solid #333;
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .modal-close:hover {
+            color: #e5e7eb;
+        }
+
+        /* Details */
+        .item-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .detail-image {
+            background: linear-gradient(135deg, #1a3a52, #0f2438);
+            border-radius: 8px;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            min-height: 300px;
+        }
+
+        .detail-info h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #333;
+            color: #b0b9c3;
+        }
+
+        .detail-stat strong {
+            color: #e5e7eb;
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: #2a2a2a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Admin Panel */
+        .admin-form {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: #2a2a2a;
+            color: #e5e7eb;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Buttons */
+        .btn {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #e5e7eb;
+            border: 1px solid #333;
+        }
+
+        .btn-secondary:hover {
+            background: #333;
+            border-color: #3b82f6;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1a1a;
+            border-top: 1px solid #333;
+            padding: 2rem;
+            text-align: center;
+            color: #999;
+            margin-top: 4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-items {
+                gap: 1rem;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .item-detail {
+                grid-template-columns: 1fr;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">🎮 Active Matter Wiki</div>
+        <ul class="nav-items">
+            <li><a href="#home" class="nav-link active">Home</a></li>
+            <li><a href="#items" class="nav-link">Предметы</a></li>
+            <li><a href="#locations" class="nav-link">Локации</a></li>
+            <li><a href="#guides" class="nav-link">Гайды</a></li>
+            <li><a href="#admin" class="nav-link">Админ</a></li>
+        </ul>
+        <div class="search-bar">
+            <input type="text" placeholder="Ctrl+K: Поиск..." id="search">
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>Пробудитесь в мире Active Matter</h1>
+                <p>Полные гайды, каталоги и стратегии для эксплореров</p>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">450+</div>
+                    <div class="stat-label">Предметов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">25</div>
+                    <div class="stat-label">Локаций</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">120+</div>
+                    <div class="stat-label">Гайдов</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">v1.2.5</div>
+                    <div class="stat-label">Латест патч</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Items Section -->
+        <section id="items" class="section hidden">
+            <h1>Предметы</h1>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Тип:</label>
+                    <select id="typeFilter">
+                        <option value="">All</option>
+                        <option value="weapon">Оружие</option>
+                        <option value="armor">Армор</option>
+                        <option value="consumable">Потребляемые</option>
+                        <option value="quest">Квест</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Редкость:</label>
+                    <select id="rarityFilter">
+                        <option value="">All</option>
+                        <option value="common">Обычные</option>
+                        <option value="rare">Редкие</option>
+                        <option value="epic">Эпик</option>
+                        <option value="legendary">Легендарные</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Items Grid -->
+            <div class="grid" id="itemsGrid"></div>
+        </section>
+
+        <!-- Locations Section -->
+        <section id="locations" class="section hidden">
+            <h1>Локации</h1>
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Сложность:</label>
+                    <select id="difficultyFilter">
+                        <option value="">All</option>
+                        <option value="easy">Легкая</option>
+                        <option value="medium">Нормальная</option>
+                        <option value="hard">Тяжелая</option>
+                        <option value="nightmare">Ночные моры</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid" id="locationsGrid"></div>
+        </section>
+
+        <!-- Guides Section -->
+        <section id="guides" class="section hidden">
+            <h1>Гайды</h1>
+            <div class="grid" id="guidesGrid"></div>
+        </section>
+
+        <!-- Admin Section -->
+        <section id="admin" class="section hidden">
+            <h1>Административная панель</h1>
+            <div class="admin-form">
+                <h2>Добавить предмет</h2>
+                <form id="adminForm">
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" placeholder="Название предмета" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание</label>
+                        <textarea placeholder="Описание" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Тип</label>
+                        <select required>
+                            <option value="weapon">Оружие</option>
+                            <option value="armor">Армор</option>
+                            <option value="consumable">Потребляемые</option>
+                            <option value="quest">Квест</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Редкость</label>
+                        <select required>
+                            <option value="common">Обычная</option>
+                            <option value="rare">Редкая</option>
+                            <option value="epic">Эпик</option>
+                            <option value="legendary">Легендарная</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Цена</label>
+                        <input type="number" placeholder="5000" required>
+                    </div>
+                    <button class="btn btn-full">Добавить предмет</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 Active Matter Wiki. Сделано с ❤️ для коммунити</p>
+    </footer>
+
+    <script>
+        // Mock Data
+        const items = [
+            { id: 1, name: 'Меч Сталяния', type: 'weapon', rarity: 'epic', price: 5000, weight: 2.5, emoji: '⚔️', description: 'Мощное сталяное оружие' },
+            { id: 2, name: 'Чародейная Палочка', type: 'weapon', rarity: 'legendary', price: 15000, weight: 0.5, emoji: '✨', description: 'Очень редкое предмет' },
+            { id: 3, name: 'Кожаная Кираса', type: 'armor', rarity: 'rare', price: 8000, weight: 4.0, emoji: '💺', description: 'Надежная защита' },
+            { id: 4, name: 'Зелье Айсанса', type: 'consumable', rarity: 'common', price: 150, weight: 0.1, emoji: '🌿', description: 'Восстанавливает мана' },
+            { id: 5, name: 'Кывста Анчара', type: 'quest', rarity: 'epic', price: 0, weight: 0.2, emoji: '📜', description: 'Контракт для особо опасных нсканий' },
+            { id: 6, name: 'Платиновые Оцы', type: 'armor', rarity: 'legendary', price: 20000, weight: 0.3, emoji: '👓', description: 'Странные высю оцы' }
+        ];
+
+        const locations = [
+            { id: 1, name: 'Темный Лес', difficulty: 'medium', emoji: '🌲', description: 'Нес с древними печалями' },
+            { id: 2, name: 'Угол Мори', difficulty: 'hard', emoji: '⛵', description: 'Неумирающая стихия' },
+            { id: 3, name: 'Тайные Пещеры', difficulty: 'hard', emoji: '⛏️', description: 'Глубокие раес магии' },
+            { id: 4, name: 'Святилище Дракона', difficulty: 'nightmare', emoji: '🐉', description: 'Место жительства древних зверей' }
+        ];
+
+        const guides = [
+            { id: 1, title: 'Гайд для Новичков', category: 'beginner', emoji: '📚', views: 5000 },
+            { id: 2, title: 'Мастерство боя', category: 'combat', emoji: '⚔️', views: 2300 },
+            { id: 3, title: 'Лукавство и Цаубериум', category: 'magic', emoji: '✨', views: 1800 },
+            { id: 4, title: 'Монтаж: Организация По Чинаристи', category: 'trading', emoji: '💰', views: 3200 }
+        ];
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = link.getAttribute('href').slice(1);
+                showSection(sectionId);
+                loadSectionData(sectionId);
+            });
+        });
+
+        // Load Data
+        function loadSectionData(sectionId) {
+            if (sectionId === 'items') {
+                renderItems(items);
+            } else if (sectionId === 'locations') {
+                renderLocations(locations);
+            } else if (sectionId === 'guides') {
+                renderGuides(guides);
+            }
+        }
+
+        // Render Items
+        function renderItems(filteredItems) {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = filteredItems.map(item => `
+                <div class="card" onclick="showDetail('item', ${item.id})">
+                    <div class="card-image">${item.emoji}</div>
+                    <div class="card-content">
+                        <div class="card-title">${item.name}</div>
+                        <div class="card-description">${item.type}</div>
+                        <div class="card-meta">
+                            <span class="badge rarity-${item.rarity}">${item.rarity}</span>
+                            <span class="badge">💰 ${item.price}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Locations
+        function renderLocations(filteredLocations) {
+            const grid = document.getElementById('locationsGrid');
+            grid.innerHTML = filteredLocations.map(loc => `
+                <div class="card" onclick="showDetail('location', ${loc.id})">
+                    <div class="card-image">${loc.emoji}</div>
+                    <div class="card-content">
+                        <div class="card-title">${loc.name}</div>
+                        <div class="card-description">Сложность: ${loc.difficulty}</div>
+                        <div class="card-meta">
+                            <span class="badge">${loc.difficulty}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Guides
+        function renderGuides(filteredGuides) {
+            const grid = document.getElementById('guidesGrid');
+            grid.innerHTML = filteredGuides.map(guide => `
+                <div class="card" onclick="showDetail('guide', ${guide.id})">
+                    <div class="card-image">${guide.emoji}</div>
+                    <div class="card-content">
+                        <div class="card-title">${guide.title}</div>
+                        <div class="card-description">${guide.category}</div>
+                        <div class="card-meta">
+                            <span class="badge">👁️ ${guide.views}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Detail Modal
+        function showDetail(type, id) {
+            let item;
+            if (type === 'item') item = items.find(i => i.id === id);
+            else if (type === 'location') item = locations.find(i => i.id === id);
+            else item = guides.find(i => i.id === id);
+
+            const modalBody = document.getElementById('modalBody');
+            if (type === 'item') {
+                modalBody.innerHTML = `
+                    <div class="item-detail">
+                        <div class="detail-image">${item.emoji}</div>
+                        <div class="detail-info">
+                            <h2>${item.name}</h2>
+                            <div class="detail-stat"><span>Тип:</span> <strong>${item.type}</strong></div>
+                            <div class="detail-stat"><span>Редкость:</span> <strong>${item.rarity}</strong></div>
+                            <div class="detail-stat"><span>Цена:</span> <strong>${item.price}</strong></div>
+                            <div class="detail-stat"><span>Вес:</span> <strong>${item.weight}kg</strong></div>
+                            <p style="margin-top: 1rem;">${item.description}</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'location') {
+                modalBody.innerHTML = `
+                    <div class="item-detail">
+                        <div class="detail-image">${item.emoji}</div>
+                        <div class="detail-info">
+                            <h2>${item.name}</h2>
+                            <div class="detail-stat"><span>Сложность:</span> <strong>${item.difficulty}</strong></div>
+                            <p style="margin-top: 1rem;">${item.description}</p>
+                            <div style="margin-top: 1rem;">
+                                <strong>Враги:</strong> Goblins, Orcs, Shadow Spirits
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <strong>Рекомендуемое снаряжение:</strong> Средняя броня, Зелья жизни
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        // Filters
+        document.getElementById('typeFilter')?.addEventListener('change', (e) => {
+            const filtered = items.filter(i => !e.target.value || i.type === e.target.value);
+            renderItems(filtered);
+        });
+
+        document.getElementById('rarityFilter')?.addEventListener('change', (e) => {
+            const filtered = items.filter(i => !e.target.value || i.rarity === e.target.value);
+            renderItems(filtered);
+        });
+
+        document.getElementById('difficultyFilter')?.addEventListener('change', (e) => {
+            const filtered = locations.filter(i => !e.target.value || i.difficulty === e.target.value);
+            renderLocations(filtered);
+        });
+
+        // Admin Form
+        document.getElementById('adminForm')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('✅ Предмет успешно добавлен!\n\nВ реальном приложении данные будут отправлены на API.');
+            e.target.reset();
+        });
+
+        // Search
+        document.getElementById('search').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                alert(`🔍 Поиск: "${e.target.value}"\n\nВ реальном приложении это выполнит полнотекстовый поиск.`);
+            }
+        });
+
+        // Global search with Ctrl+K
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('search').focus();
+            }
+        });
+    </script>
+</body>
+</html>
