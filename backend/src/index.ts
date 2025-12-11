@@ -5,13 +5,14 @@ import 'dotenv/config';
 
 import itemRoutes from './routes/items.js';
 import authRoutes from './routes/auth.js';
+import locationRoutes from './routes/locations.js';
+import discordRoutes from './routes/discord.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
 const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
 
-// Middleware
 app.use(helmet());
 app.use(
   cors({
@@ -24,7 +25,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
 app.get('/', (req: Request, res: Response) => {
   res.json({
     service: 'Active Matter Wiki API',
@@ -41,24 +41,20 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-// API Routes
 app.use('/api/v1/items', itemRoutes);
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/locations', locationRoutes);
+app.use('/api/v1/discord', discordRoutes);
 
-// 404 handler
 app.use(notFoundHandler);
-
-// Error handler (must be last)
 app.use(errorHandler);
 
-// Start server
 const server = app.listen(port, () => {
   console.log(`\n🚀 Server running on http://localhost:${port}`);
   console.log(`📚 API Docs: http://localhost:${port}/api/docs`);
   console.log(`🌐 CORS enabled for: ${clientUrl}\n`);
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\n\n📌 Shutting down gracefully...');
   server.close(() => {

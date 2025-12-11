@@ -5,15 +5,12 @@ import {
   logout,
   getMe,
 } from '../controllers/authController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 
 const router = Router();
 
-// Public routes
 router.post('/login', login);
-router.post('/register', authenticate, authorize('admin'), register);
-
-// Protected routes
+router.post('/register', register);
 router.post('/logout', authenticate, logout);
 router.get('/me', authenticate, getMe);
 

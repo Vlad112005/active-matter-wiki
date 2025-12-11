@@ -1,390 +1,208 @@
-# Active Matter Wiki 🎮
+# Active Matter Wiki
 
-Информационный портал для игры **Active Matter**, структурированный по аналогии с [tarkov.help](https://tarkov.help/ru).
+**Информационный портал для игры Active Matter** — полный каталог предметов, локаций, гайдов и патчей.
 
-## 📋 Описание
-
-Полнофункциональный информационный сайт с каталогом предметов, локаций, гайдов, патч-нотов и администраторской панелью для управления контентом.
-
-### Основные возможности
-- 🔍 **Глобальный поиск** по всему сайту (Ctrl+K или Cmd+K)
-- 📦 **Каталог предметов** с фильтрацией по типу, редкости, цене
-- 🗺️ **Локации** с описанием, врагами, лутом и рекомендациями
-- 📚 **Гайды** с Markdown редактором и историей версий
-- 📰 **Патч-ноты** с архивом обновлений
-- 👥 **Персонажи/НПЦ** с квестами и торговлей
-- 🛠️ **Админская панель** для управления всем контентом
-- 🌙 **Dark/Light mode** с сохранением предпочтений
-- 📊 **Аналитика** статистики сайта
-- 🔐 **Безопасная аутентификация** с JWT токенами
-
-## 🏗️ Архитектура проекта
-
-```
-active-matter-wiki/
-├── frontend/                    # React приложение
-│   ├── src/
-│   │   ├── components/          # Переиспользуемые UI компоненты
-│   │   │   ├── Layout/
-│   │   │   ├── Navigation/
-│   │   │   ├── Cards/
-│   │   │   ├── Forms/
-│   │   │   └── Admin/
-│   │   ├── pages/              # Страницы приложения
-│   │   │   ├── Home/
-│   │   │   ├── Items/
-│   │   │   ├── Locations/
-│   │   │   ├── Characters/
-│   │   │   ├── Guides/
-│   │   │   ├── Patches/
-│   │   │   └── Admin/
-│   │   ├── hooks/              # Пользовательские React хуки
-│   │   ├── services/           # API сервисы
-│   │   ├── store/              # Управление состоянием (Zustand)
-│   │   ├── types/              # TypeScript типы
-│   │   ├── utils/              # Утилиты и хелперы
-│   │   ├── styles/             # Глобальные стили
-│   │   └── App.tsx
-│   ├── public/                 # Статические файлы
-│   ├── .env.example
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── vite.config.ts
-│
-├── backend/                    # Node.js + Express сервер
-│   ├── src/
-│   │   ├── routes/            # API маршруты
-│   │   │   ├── items.ts
-│   │   │   ├── locations.ts
-│   │   │   ├── characters.ts
-│   │   │   ├── guides.ts
-│   │   │   ├── patches.ts
-│   │   │   ├── auth.ts
-│   │   │   ├── admin.ts
-│   │   │   └── search.ts
-│   │   ├── controllers/       # Бизнес-логика
-│   │   ├── models/            # Модели данных (Prisma/TypeORM)
-│   │   ├── middleware/        # Middleware функции
-│   │   │   ├── auth.ts
-│   │   │   ├── validation.ts
-│   │   │   └── errorHandler.ts
-│   │   ├── services/          # Сервисные слои
-│   │   ├── utils/             # Утилиты
-│   │   ├── database/          # Конфиг БД
-│   │   │   ├── migrations/
-│   │   │   └── seeders/
-│   │   └── index.ts          # Точка входа
-│   ├── .env.example
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── docker-compose.yml
-│
-├── docs/                      # Документация
-│   ├── API.md                # API документация
-│   ├── DATABASE.md           # Схема БД
-│   └── DEPLOYMENT.md         # Гайд по деплою
-│
-├── .github/workflows/         # CI/CD пайплайны
-│   ├── test.yml
-│   └── deploy.yml
-│
-├── docker-compose.yml        # Локальная разработка
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-## 🛠️ Технологический стек
-
-### Frontend
-- **React 18+** с TypeScript
-- **Vite** для быстрой разработки
-- **TailwindCSS** для стилизации
-- **Zustand** для управления состоянием
-- **React Query** (@tanstack/react-query) для кэширования API
-- **Axios** для HTTP запросов
-- **React Markdown** для отрисовки гайдов
-- **Framer Motion** для анимаций
-- **React Hot Toast** для уведомлений
+## Технологии
 
 ### Backend
-- **Node.js** с **Express** и TypeScript
-- **PostgreSQL** для основной БД
-- **Prisma** или **TypeORM** для работы с БД
-- **JWT** для аутентификации
-- **Bcryptjs** для хеширования паролей
-- **Multer** + **Sharp** для загрузки и обработки изображений
-- **Zod** для валидации данных
-- **Helmet** для безопасности
-- **CORS** для кроссдоменных запросов
+- Node.js + Express + TypeScript
+- PostgreSQL + Prisma ORM
+- JWT Authentication + Discord OAuth2
+- Роли: user, premium, moderator, admin, founder
 
-### DevOps
-- **Docker** для контейнеризации
-- **GitHub Actions** для CI/CD
-- **Vercel/Netlify** для frontend
-- **Railway/Render** для backend
-- **PostgreSQL** на Neon/Supabase
+### Frontend
+- React 18 + TypeScript
+- Vite
+- TailwindCSS
+- React Query + Zustand
+- React Router
 
-## 🚀 Быстрый старт
+## Быстрый старт
 
-### Требования
-- Node.js 18+ и npm/yarn
-- PostgreSQL 13+
-- Git
+### 1. Клонируй репозиторий
 
-### Локальная разработка
-
-1. **Клонируйте репозиторий:**
 ```bash
 git clone https://github.com/Vlad112005/active-matter-wiki.git
 cd active-matter-wiki
 ```
 
-2. **Установите зависимости:**
-```bash
-# Frontend
-cd frontend
-npm install
+### 2. Backend
 
-# Backend (в другом терминале)
+```bash
 cd backend
 npm install
 ```
 
-3. **Настройте переменные окружения:**
-```bash
-# frontend/.env.local
-VITE_API_BASE_URL=http://localhost:3001/api/v1
+Создай `.env`:
 
-# backend/.env
-DATABASE_URL="postgresql://user:password@localhost:5432/active_matter_dev"
-JWT_SECRET="your-secret-key-here"
-JWT_EXPIRE="7d"
-NODE_ENV="development"
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/active_matter_wiki"
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 PORT=3001
+CLIENT_URL="http://localhost:5173"
 ```
 
-4. **Запустите БД (опционально с Docker):**
+Миграция БД:
+
 ```bash
-# Используя docker-compose
-docker-compose up -d
-
-# Или локально
-psql -U postgres -c "CREATE DATABASE active_matter_dev;"
+npx prisma migrate dev --name init
 ```
 
-5. **Выполните миграции:**
+Сиды (роли, предметы, локации, гайды):
+
+```bash
+npx tsx src/database/seeders/seedRoles.ts
+npx tsx src/database/seeders/seedItems.ts
+npx tsx src/database/seeders/seedLocations.ts
+npx tsx src/database/seeders/seedGuides.ts
+npx tsx src/database/seeders/seedPatches.ts
+```
+
+Запуск:
+
+```bash
+npm run dev
+```
+
+Сервер поднимется на `http://localhost:3001`
+
+### 3. Frontend
+
+```bash
+cd ../frontend
+npm install
+```
+
+Создай `.env`:
+
+```env
+VITE_API_BASE_URL=http://localhost:3001/api/v1
+VITE_APP_TITLE="Active Matter Wiki"
+VITE_APP_DESCRIPTION="Information portal for Active Matter game"
+```
+
+Запуск:
+
+```bash
+npm run dev
+```
+
+Открой `http://localhost:5173`
+
+## Роли и доступ
+
+| Роль | Описание | Права |
+|------|----------|-------|
+| **user** | Обычный пользователь после регистрации | Просмотр контента |
+| **premium** | Пользователь с подпиской | Эксклюзивный контент |
+| **moderator** | Модератор контента | Редактирование гайдов, новостей |
+| **admin** | Администратор | Управление модераторами, добавление предметов |
+| **founder** | Основатель | Полный доступ ко всему |
+
+### Получение роли founder
+
+1. Зарегистрируйся на сайте
+2. Найди своего пользователя в БД:
+   ```sql
+   SELECT * FROM "User" WHERE email = 'твой@email.com';
+   ```
+3. Обнови роль:
+   ```sql
+   UPDATE "User" 
+   SET "roleId" = (SELECT id FROM "Role" WHERE name = 'founder')
+   WHERE email = 'твой@email.com';
+   ```
+
+## API Endpoints
+
+### Auth
+- `POST /api/v1/auth/register` - Регистрация
+- `POST /api/v1/auth/login` - Вход
+- `POST /api/v1/auth/logout` - Выход
+- `GET /api/v1/auth/me` - Профиль
+
+### Items
+- `GET /api/v1/items` - Список предметов
+- `GET /api/v1/items/:id` - Предмет
+- `POST /api/v1/items` - Создать (admin+)
+- `PUT /api/v1/items/:id` - Обновить (admin+)
+- `DELETE /api/v1/items/:id` - Удалить (founder)
+
+### Locations
+- `GET /api/v1/locations` - Список локаций
+- `GET /api/v1/locations/:id` - Локация
+- `POST /api/v1/locations` - Создать (admin+)
+- `PUT /api/v1/locations/:id` - Обновить (admin+)
+- `DELETE /api/v1/locations/:id` - Удалить (founder)
+
+## Структура проекта
+
+```
+active-matter-wiki/
+├── backend/
+│   ├── prisma/
+│   │   └── schema.prisma
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── database/
+│   │   │   ├── client.ts
+│   │   │   └── seeders/
+│   │   └── index.ts
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── store/
+│   │   ├── styles/
+│   │   ├── types/
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── index.html
+│   └── package.json
+└── README.md
+```
+
+## Разработка
+
+### Backend
 ```bash
 cd backend
-npm run migrate
+npm run dev     # Запуск с hot-reload
+npm run build   # Сборка
+npm start       # Прод
 ```
 
-6. **Запустите оба сервера:**
+### Frontend
 ```bash
-# Terminal 1 - Frontend (Vite dev server)
 cd frontend
-npm run dev
-# Откроется на http://localhost:5173
-
-# Terminal 2 - Backend
-cd backend
-npm run dev
-# Запустится на http://localhost:3001
+npm run dev     # Запуск dev сервера
+npm run build   # Сборка для прода
+npm run preview # Просмотр прод билда
 ```
 
-## 📚 API Документация
+## Discord OAuth2 (в разработке)
 
-### Основные endpoints
+Для полной интеграции Discord OAuth:
 
-#### Предметы
-```
-GET  /api/v1/items                    - Список всех предметов
-GET  /api/v1/items?type=weapon&rarity=rare  - С фильтрацией
-GET  /api/v1/items/:id                - Деталь предмета
-GET  /api/v1/items/search?q=sword     - Поиск предметов
-```
+1. Создай приложение на [Discord Developer Portal](https://discord.com/developers/applications)
+2. Добавь redirect URI: `http://localhost:3001/api/v1/discord/callback`
+3. Получи Client ID и Secret
+4. Добавь в `.env`:
+   ```env
+   DISCORD_CLIENT_ID=твой_client_id
+   DISCORD_CLIENT_SECRET=твой_secret
+   DISCORD_REDIRECT_URI=http://localhost:3001/api/v1/discord/callback
+   ```
 
-#### Локации
-```
-GET  /api/v1/locations               - Список локаций
-GET  /api/v1/locations/:id            - Деталь локации
-```
+## Лицензия
 
-#### Гайды
-```
-GET  /api/v1/guides                   - Список гайдов
-GET  /api/v1/guides/:slug             - Гайд по slug
-GET  /api/v1/guides/:id/versions      - История версий
-```
+MIT
 
-#### Админ операции (требует JWT токена)
-```
-POST   /api/v1/admin/auth/login       - Вход админа
-POST   /api/v1/admin/items            - Создание предмета
-PUT    /api/v1/admin/items/:id        - Редактирование предмета
-DELETE /api/v1/admin/items/:id        - Удаление предмета
-PATCH  /api/v1/admin/items/:id/image  - Загрузка изображения
-```
+## Контакты
 
-Полная документация: [docs/API.md](./docs/API.md)
-
-## 🗂️ Модель данных
-
-### Item (Предмет)
-```typescript
-{
-  id: string (UUID)
-  name: string
-  description: string
-  image: string (URL)
-  type: 'weapon' | 'armor' | 'consumable' | 'quest' | 'other'
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary'
-  price: number
-  weight: number
-  stackable: boolean
-  source: string[] // Где получить
-  tags: string[]
-  createdAt: Date
-  updatedAt: Date
-}
-```
-
-### Location (Локация)
-```typescript
-{
-  id: string (UUID)
-  name: string
-  description: string
-  difficulty: 'easy' | 'medium' | 'hard' | 'nightmare'
-  mapImage: string (URL)
-  enemies: Array<{type: string, count: number}>
-  loot: Array<{itemId: string, spawnChance: number}>
-  tips: string[]
-  recommendedGear: string[] // Item IDs
-  createdAt: Date
-  updatedAt: Date
-}
-```
-
-### Guide (Гайд)
-```typescript
-{
-  id: string (UUID)
-  slug: string
-  title: string
-  author: string (User ID)
-  content: string (Markdown)
-  category: string
-  tags: string[]
-  rating: number
-  views: number
-  published: boolean
-  versions: Array<{version: number, content: string, changedAt: Date}>
-  createdAt: Date
-  updatedAt: Date
-}
-```
-
-Полная схема: [docs/DATABASE.md](./docs/DATABASE.md)
-
-## 🎨 Дизайн и UI
-
-### Цветовая схема
-- **Фон (dark):** #0f0f0f, #1a1a1a
-- **Поверхность (surface):** #2a2a2a, #333333
-- **Основной цвет:** #3b82f6 (синий)
-- **Акценты:** #fbbf24 (золотой), #ef4444 (красный)
-- **Текст:** #e5e7eb (светло-серый)
-
-### Адаптивность
-- Mobile-first подход
-- Breakpoints: 640px, 768px, 1024px, 1280px
-- Touch-friendly интерфейс
-
-## 🔐 Безопасность
-
-- ✅ HTTPS обязателен
-- ✅ JWT с HttpOnly cookies
-- ✅ Защита от SQL injection (параметризованные запросы)
-- ✅ CSRF защита
-- ✅ Rate limiting на API
-- ✅ Валидация и санитизация входных данных
-- ✅ Helmet.js для HTTP заголовков
-- ✅ CORS настройки
-
-## ⚡ Производительность
-
-- Lazy loading изображений
-- Code splitting с динамическим импортом
-- Кэширование API запросов (React Query)
-- Минификация и сжатие
-- CDN для статических ресурсов
-- Database индексы для быстрого поиска
-
-**Целевые метрики:**
-- Time to Interactive (TTI) < 2s
-- First Contentful Paint (FCP) < 1.5s
-- Lighthouse score > 90
-
-## 🚢 Деплой
-
-### Frontend (Vercel)
-```bash
-vercel --prod
-```
-
-### Backend (Railway/Render)
-```bash
-# Используя Railway CLI
-railway up
-
-# Или через Render
-git push origin main
-```
-
-Детальная инструкция: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
-
-## 📈 Фазы разработки
-
-### ✅ Фаза 1: MVP (2-3 недели)
-- [x] Базовый frontend с главной страницей
-- [x] Каталог предметов и локаций
-- [x] Простой backend с CRUD операциями
-- [x] Базовая админская панель
-- [x] Подключение PostgreSQL
-- [x] Деплой на Vercel + Railway
-
-### 📅 Фаза 2: Основной функционал (2-3 недели)
-- [ ] Гайды с Markdown редактором
-- [ ] Полнотекстовый поиск
-- [ ] Аналитика и статистика
-- [ ] Оптимизация производительности
-- [ ] SEO оптимизация
-
-### 🎯 Фаза 3: Полировка и расширения (1-2 недели)
-- [ ] Интеграция с Discord (оповещения)
-- [ ] Социальные сети (рейтинг гайдов)
-- [ ] Экспорт в PDF
-- [ ] Система комментариев
-- [ ] Кэширование с Redis
-
-## 📝 Лицензия
-
-MIT License - см. [LICENSE](./LICENSE)
-
-## 🤝 Внесение вклада
-
-1. Форкните репозиторий
-2. Создайте feature branch (`git checkout -b feature/amazing-feature`)
-3. Закоммитьте изменения (`git commit -m 'Add amazing feature'`)
-4. Запушьте в branch (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
-
-## 📞 Контакты
-
-- GitHub Issues: [https://github.com/Vlad112005/active-matter-wiki/issues](https://github.com/Vlad112005/active-matter-wiki/issues)
-- Discord: [Ссылка на Discord сервер]
-
----
-
-**Сделано с ❤️ для сообщества Active Matter**
+- GitHub: [@Vlad112005](https://github.com/Vlad112005)
+- Репозиторий: [active-matter-wiki](https://github.com/Vlad112005/active-matter-wiki)
