@@ -8,6 +8,7 @@ import authRoutes from './routes/auth.js';
 import locationRoutes from './routes/locations.js';
 import guideRoutes from './routes/guides.js';
 import patchRoutes from './routes/patches.js';
+import userRoutes from './routes/users.js';
 import discordRoutes from './routes/discord.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -48,6 +49,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/locations', locationRoutes);
 app.use('/api/v1/guides', guideRoutes);
 app.use('/api/v1/patches', patchRoutes);
+app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/discord', discordRoutes);
 
 app.use(notFoundHandler);

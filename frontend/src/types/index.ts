@@ -3,15 +3,18 @@ export interface User {
   email: string;
   username: string;
   avatarUrl?: string;
+  bio?: string;
   role: {
     id: string;
     name: string;
+    displayName: string;
     description?: string;
   };
   isPremium: boolean;
   premiumUntil?: string;
   createdAt: string;
   updatedAt: string;
+  guides?: Array<{ id: string; title: string; slug: string }>;
 }
 
 export interface AuthState {
@@ -99,4 +102,22 @@ export interface Patch {
   content: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
+}
+
+export interface UserStats {
+  total: number;
+  premium: number;
+  byRole: Array<{
+    role: string;
+    displayName: string;
+    count: number;
+  }>;
+  recent: User[];
 }
