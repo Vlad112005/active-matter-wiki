@@ -41,29 +41,7 @@ export const getItem = async (req: Request, res: Response) => {
     const item = await prisma.item.findUnique({
       where: { id },
       include: {
-        lootSpawns: {
-          include: {
-            location: true,
-          },
-        },
-        craftIngredients: {
-          include: {
-            recipe: {
-              include: {
-                result: true,
-              },
-            },
-          },
-        },
-        craftResults: {
-          include: {
-            ingredients: {
-              include: {
-                item: true,
-              },
-            },
-          },
-        },
+        monolithUnlocks: true,
       },
     });
 
@@ -97,7 +75,7 @@ export const createItem = async (req: AuthRequest, res: Response) => {
         type: data.type,
         rarity: data.rarity,
         price: data.price || 0,
-        silverPrice: data.silverPrice,
+        crystalPrice: data.crystalPrice || 0,
         replicationPoints: data.replicationPoints,
         monolithLevel: data.monolithLevel,
         weight: data.weight || 0,
@@ -148,7 +126,7 @@ export const updateItem = async (req: AuthRequest, res: Response) => {
         ...(data.type && { type: data.type }),
         ...(data.rarity && { rarity: data.rarity }),
         ...(data.price !== undefined && { price: data.price }),
-        ...(data.silverPrice !== undefined && { silverPrice: data.silverPrice }),
+        ...(data.crystalPrice !== undefined && { crystalPrice: data.crystalPrice }),
         ...(data.replicationPoints !== undefined && { replicationPoints: data.replicationPoints }),
         ...(data.monolithLevel !== undefined && { monolithLevel: data.monolithLevel }),
         ...(data.weight !== undefined && { weight: data.weight }),
