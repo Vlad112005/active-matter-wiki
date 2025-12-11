@@ -7,6 +7,7 @@ import Items from './pages/Items';
 import ItemDetail from './pages/ItemDetail';
 import News from './pages/News';
 import BuildCalculator from './pages/BuildCalculator';
+import Monolith from './pages/Monolith';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
@@ -40,6 +41,7 @@ function App() {
         <Route path="items/:id" element={<ItemDetail />} />
         <Route path="news" element={<News />} />
         <Route path="build-calculator" element={<BuildCalculator />} />
+        <Route path="monolith" element={<Monolith />} />
         <Route path="locations" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Локации</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
         <Route path="guides" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Гайды</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
         <Route path="patches" element={<News />} />
