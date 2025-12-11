@@ -1,10 +1,12 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useSettings } from './context/SettingsContext';
 import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Items from './pages/Items';
 import ItemDetail from './pages/ItemDetail';
+import News from './pages/News';
+import BuildCalculator from './pages/BuildCalculator';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
@@ -36,9 +38,11 @@ function App() {
         <Route index element={<Home />} />
         <Route path="items" element={<Items />} />
         <Route path="items/:id" element={<ItemDetail />} />
+        <Route path="news" element={<News />} />
+        <Route path="build-calculator" element={<BuildCalculator />} />
         <Route path="locations" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Локации</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
         <Route path="guides" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Гайды</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
-        <Route path="patches" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Патчи</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
+        <Route path="patches" element={<News />} />
         <Route path="admin" element={<Admin />} />
         <Route path="profile/:id" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />
