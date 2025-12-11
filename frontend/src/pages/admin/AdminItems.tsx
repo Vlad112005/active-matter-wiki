@@ -4,8 +4,16 @@ import { Item } from '../../types';
 import { Package, Plus, Edit, Trash2, Search, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+interface MonolithLevel {
+  id: string;
+  code: string;
+  name: string;
+  order: number;
+}
+
 const AdminItems = () => {
   const [items, setItems] = useState<Item[]>([]);
+  const [monolithLevels, setMonolithLevels] = useState<MonolithLevel[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -24,7 +32,7 @@ const AdminItems = () => {
     price: 0,
     silverPrice: 0,
     replicationPoints: 0,
-    monolithLevel: 1,
+    monolithLevel: '',
     weight: 0,
     stackable: false,
     maxStack: 1,
@@ -38,8 +46,23 @@ const AdminItems = () => {
   });
 
   useEffect(() => {
-    loadItems();
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      const [itemsRes, levelsRes] = await Promise.all([
+        apiClient.get<Item[]>('/items'),
+        apiClient.get('/monolith/levels'),
+      ]);
+      setItems(itemsRes.data || []);
+      setMonolithLevels(levelsRes.data || []);
+    } catch (error) {
+      toast.error('Ошибка загрузки данных');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadItems = async () => {
     try {
@@ -47,8 +70,6 @@ const AdminItems = () => {
       setItems(response.data || []);
     } catch (error) {
       toast.error('Ошибка загрузки предметов');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -65,7 +86,7 @@ const AdminItems = () => {
       price: 0,
       silverPrice: 0,
       replicationPoints: 0,
-      monolithLevel: 1,
+      monolithLevel: '',
       weight: 0,
       stackable: false,
       maxStack: 1,
@@ -94,7 +115,7 @@ const AdminItems = () => {
       price: item.price,
       silverPrice: item.silverPrice || 0,
       replicationPoints: item.replicationPoints || 0,
-      monolithLevel: item.monolithLevel || 1,
+      monolithLevel: item.monolithLevel || '',
       weight: item.weight,
       stackable: item.stackable,
       maxStack: item.maxStack,
@@ -119,11 +140,17 @@ const AdminItems = () => {
     }
 
     try {
+      // Убедимся что monolithLevel - строка или null
+      const submitData = {
+        ...formData,
+        monolithLevel: formData.monolithLevel || null,
+      };
+
       if (editingItem) {
-        await apiClient.put(`/items/${editingItem.id}`, formData);
+        await apiClient.put(`/items/${editingItem.id}`, submitData);
         toast.success('Предмет обновлён');
       } else {
-        await apiClient.post('/items', formData);
+        await apiClient.post('/items', submitData);
         toast.success('Предмет создан');
       }
       setShowModal(false);
@@ -371,7 +398,7 @@ const AdminItems = () => {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Жетоны</label>
+                  <label className="block text-sm font-medium mb-2">Жетоны монолита</label>
                   <input
                     type="number"
                     value={formData.price}
@@ -381,7 +408,7 @@ const AdminItems = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Серебро</label>
+                  <label className="block text-sm font-medium mb-2">Кредиты</label>
                   <input
                     type="number"
                     value={formData.silverPrice}
@@ -404,12 +431,18 @@ const AdminItems = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Уровень монолита</label>
-                  <input
-                    type="number"
+                  <select
                     value={formData.monolithLevel}
-                    onChange={(e) => setFormData({ ...formData, monolithLevel: Number(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, monolithLevel: e.target.value })}
                     className="w-full"
-                  />
+                  >
+                    <option value="">Не указан</option>
+                    {monolithLevels.map((level) => (
+                      <option key={level.code} value={level.code}>
+                        {level.code} - {level.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
