@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../services/api';
 import { Item } from '../types';
-import { Package, Search, Filter } from 'lucide-react';
+import { Package, Search, Filter, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Items = () => {
@@ -28,7 +29,6 @@ const Items = () => {
       setItems(response.data || []);
     } catch (error: any) {
       toast.error('Ошибка загрузки предметов');
-      console.error('Load items error:', error);
     } finally {
       setLoading(false);
     }
@@ -39,15 +39,23 @@ const Items = () => {
     epic: 'from-purple-500 to-pink-500',
     rare: 'from-blue-500 to-cyan-500',
     uncommon: 'from-green-500 to-emerald-500',
-    common: 'from-gray-500 to-gray-600',
+    common: 'from-gray-600 to-gray-700',
   };
 
-  const rarityBadge: Record<string, string> = {
-    legendary: 'badge-legendary',
-    epic: 'badge-epic',
-    rare: 'badge-rare',
-    uncommon: 'badge-uncommon',
-    common: 'badge-common',
+  const rarityLabels: Record<string, string> = {
+    legendary: 'Легендарный',
+    epic: 'Эпический',
+    rare: 'Редкий',
+    uncommon: 'Необычный',
+    common: 'Обычный',
+  };
+
+  const typeLabels: Record<string, string> = {
+    weapon: 'Оружие',
+    armor: 'Броня',
+    consumable: 'Расходник',
+    resource: 'Ресурс',
+    quest: 'Квестовый',
   };
 
   if (loading) {
@@ -93,6 +101,7 @@ const Items = () => {
               <option value="armor">Броня</option>
               <option value="consumable">Расходники</option>
               <option value="resource">Ресурсы</option>
+              <option value="quest">Квестовые</option>
             </select>
             <select value={rarityFilter} onChange={(e) => setRarityFilter(e.target.value)} className="w-full sm:w-48">
               <option value="">Все редкости</option>
@@ -115,44 +124,70 @@ const Items = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {items.map((item, index) => (
-              <div
+              <Link
                 key={item.id}
-                className="card-interactive"
+                to={`/items/${item.id}`}
+                className="group relative bg-[#151b2b] rounded-xl overflow-hidden hover:ring-2 hover:ring-cyan-500 transition-all duration-300 animate-fade-in"
                 style={{ animationDelay: `${index * 30}ms` }}
               >
                 {/* Изображение */}
-                <div className="relative mb-4">
+                <div className="relative h-48">
                   {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-full h-48 object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div
-                      className={`w-full h-48 rounded-lg bg-gradient-to-br ${rarityColors[item.rarity] || 'from-gray-700 to-gray-800'} flex items-center justify-center`}
-                    >
-                      <Package className="w-16 h-16 text-white opacity-50" />
+                    <div className={`w-full h-full bg-gradient-to-br ${rarityColors[item.rarity]} flex items-center justify-center`}>
+                      <Package className="w-20 h-20 text-white opacity-30" />
                     </div>
                   )}
-                  <span className={`absolute top-2 right-2 ${rarityBadge[item.rarity] || 'badge'} shadow-lg`}>
-                    {item.rarity}
-                  </span>
+                  
+                  {/* Редкость - верхний правый угол */}
+                  <div className="absolute top-2 right-2">
+                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase bg-black/60 backdrop-blur-sm text-white border border-white/20`}>
+                      {rarityLabels[item.rarity]}
+                    </span>
+                  </div>
+
+                  {/* Уровень монолита */}
+                  {item.monolithLevel && (
+                    <div className="absolute top-2 left-2">
+                      <span className="flex items-center gap-1 px-2 py-1 rounded text-xs font-semibold bg-black/60 backdrop-blur-sm text-cyan-400 border border-cyan-500/30">
+                        <Lock size={12} />
+                        М{item.monolithLevel}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Градиент внизу */}
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
 
                 {/* Инфо */}
-                <h3 className="font-semibold mb-2 text-lg">{item.name}</h3>
-                <p className="text-sm text-gray-400 mb-3 line-clamp-2">{item.description}</p>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-2 group-hover:text-cyan-400 transition-colors">{item.name}</h3>
+                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">{item.description}</p>
 
-                {/* Детали */}
-                <div className="flex items-center justify-between text-sm border-t border-gray-800/50 pt-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500">Цена:</span>
-                    <span className="text-cyan-400 font-medium">{item.price}₽</span>
+                  {/* Детали */}
+                  <div className="space-y-2">
+                    {/* Цена жетонами */}
+                    {item.price > 0 && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-500">Жетоны:</span>
+                        <span className="text-amber-400 font-semibold">{item.price}₽</span>
+                      </div>
+                    )}
+
+                    {/* Тип */}
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">Тип:</span>
+                      <span className="badge text-xs">{typeLabels[item.type] || item.type}</span>
+                    </div>
                   </div>
-                  <span className="badge text-xs">{item.type}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
