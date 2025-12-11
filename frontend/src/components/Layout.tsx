@@ -24,6 +24,7 @@ const Layout = () => {
   const navLinks = [
     { label: t('nav.home'), path: '/' },
     { label: t('nav.items'), path: '/items' },
+    { label: 'Монолит', path: '/monolith' },
     { label: 'Новости', path: '/news' },
     { label: 'Калькулятор', path: '/build-calculator' },
     { label: t('nav.guides'), path: '/guides' },
@@ -229,6 +230,7 @@ const Layout = () => {
               <h4 className="font-medium mb-3 text-sm">Навигация</h4>
               <ul className="space-y-2 text-xs text-gray-500">
                 <li><Link to="/items" className="hover:text-cyan-400">Предметы</Link></li>
+                <li><Link to="/monolith" className="hover:text-cyan-400">Монолит</Link></li>
                 <li><Link to="/news" className="hover:text-cyan-400">Новости</Link></li>
                 <li><Link to="/build-calculator" className="hover:text-cyan-400">Калькулятор билдов</Link></li>
                 <li><Link to="/guides" className="hover:text-cyan-400">Гайды</Link></li>
