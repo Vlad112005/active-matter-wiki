@@ -11,6 +11,7 @@ import patchRoutes from './routes/patches.js';
 import userRoutes from './routes/users.js';
 import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
+import monolithRoutes from './routes/monolith.js';
 import discordRoutes from './routes/discord.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -54,6 +55,7 @@ app.use('/api/v1/patches', patchRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/stats', statsRoutes);
+app.use('/api/v1/monolith', monolithRoutes);
 app.use('/api/v1/discord', discordRoutes);
 
 app.use(notFoundHandler);
