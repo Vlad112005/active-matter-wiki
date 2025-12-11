@@ -28,8 +28,8 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
       include: { role: true },
     });
 
-    // Убираем passwordHash из ответа
-    const sanitizedUsers = users.map(({ passwordHash, ...user }) => user);
+    // Убираем password из ответа
+    const sanitizedUsers = users.map(({ password, ...user }) => user);
 
     return res.json({
       success: true,
@@ -76,8 +76,8 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    // Убираем passwordHash
-    const { passwordHash, ...sanitizedUser } = user;
+    // Убираем password
+    const { password, ...sanitizedUser } = user;
 
     return res.json({ success: true, data: sanitizedUser });
   } catch (error: any) {
@@ -92,7 +92,7 @@ export const getUser = async (req: AuthRequest, res: Response) => {
 // Обновить профиль (свой)
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
-    const { username, bio, avatarUrl } = req.body;
+    const { username, bio, avatar } = req.body;
     const userId = req.user!.id;
 
     // Проверка уникальности username
@@ -117,12 +117,12 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       data: {
         ...(username && { username }),
         ...(bio !== undefined && { bio }),
-        ...(avatarUrl !== undefined && { avatarUrl }),
+        ...(avatar !== undefined && { avatar }),
       },
       include: { role: true },
     });
 
-    const { passwordHash, ...sanitizedUser } = user;
+    const { password, ...sanitizedUser } = user;
 
     return res.json({
       success: true,
@@ -167,7 +167,7 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    const { passwordHash, ...sanitizedUser } = user;
+    const { password, ...sanitizedUser } = user;
 
     return res.json({ success: true, data: sanitizedUser });
   } catch (error: any) {
@@ -243,8 +243,8 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
       include: { role: true },
     });
 
-    // Убираем passwordHash
-    const sanitizedRecent = recentUsers.map(({ passwordHash, ...user }) => user);
+    // Убираем password
+    const sanitizedRecent = recentUsers.map(({ password, ...user }) => user);
 
     return res.json({
       success: true,
