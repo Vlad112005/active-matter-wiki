@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api';
 import { Unlock, Coins, Diamond, Package, Wrench, Zap, Edit } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 interface MonolithUnlock {
   id: string;
@@ -28,7 +28,7 @@ interface MonolithLevel {
 }
 
 const Monolith = () => {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [levels, setLevels] = useState<MonolithLevel[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
@@ -142,7 +142,7 @@ const Monolith = () => {
                           <span className="text-xs text-gray-400">жетонов монолита</span>
                         </div>
                       )}
-                      {currentLevel.requiredCrystals > 0 && (
+                      {currentLevel.requiredCrystals && currentLevel.requiredCrystals > 0 && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
                           <Diamond size={18} className="text-purple-400" />
                           <span className="font-semibold text-purple-400">{currentLevel.requiredCrystals}</span>
