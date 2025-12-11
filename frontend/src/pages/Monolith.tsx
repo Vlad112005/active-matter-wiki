@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api';
-import { Unlock, Coins, CreditCard, Package, Wrench, Zap, Diamond } from 'lucide-react';
+import { Unlock, Coins, Diamond, Package, Wrench, Zap, Edit, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 
 interface MonolithUnlock {
   id: string;
@@ -22,14 +23,16 @@ interface MonolithLevel {
   name: string;
   nameEn?: string;
   requiredTokens?: number;
-  requiredCredits?: number;
+  requiredCrystals?: number;
   unlocks: MonolithUnlock[];
 }
 
 const Monolith = () => {
+  const { user } = useAuth();
   const [levels, setLevels] = useState<MonolithLevel[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const isFounder = user?.role?.name === 'founder';
 
   useEffect(() => {
     loadLevels();
@@ -64,14 +67,25 @@ const Monolith = () => {
       <div className="container-max max-w-7xl">
         {/* Заголовок */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/25">
-              <Unlock className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 shadow-xl shadow-cyan-500/25">
+                <Unlock className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">Уровни доступа монолита</h1>
+                <p className="text-gray-400 text-sm mt-1">Всё что открывается на каждом уровне</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold">Уровни доступа монолита</h1>
-              <p className="text-gray-400 text-sm mt-1">Всё что открывается на каждом уровне</p>
-            </div>
+            {isFounder && (
+              <button
+                onClick={() => toast.info('Редактирование будет добавлено в админ-панели')}
+                className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 rounded-lg transition-all flex items-center gap-2"
+              >
+                <Edit size={16} />
+                <span>Управление монолитом</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -119,7 +133,7 @@ const Monolith = () => {
                   <h2 className="text-2xl font-bold mb-4">{currentLevel.name}</h2>
                   
                   {/* Требования */}
-                  {(currentLevel.requiredTokens && currentLevel.requiredTokens > 0) || (currentLevel.requiredCredits && currentLevel.requiredCredits > 0) ? (
+                  {(currentLevel.requiredTokens && currentLevel.requiredTokens > 0) || (currentLevel.requiredCrystals && currentLevel.requiredCrystals > 0) ? (
                     <div className="flex items-center gap-4 mb-4">
                       {currentLevel.requiredTokens > 0 && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
@@ -128,11 +142,11 @@ const Monolith = () => {
                           <span className="text-xs text-gray-400">жетонов монолита</span>
                         </div>
                       )}
-                      {currentLevel.requiredCredits > 0 && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                          <CreditCard size={18} className="text-blue-400" />
-                          <span className="font-semibold text-blue-400">{currentLevel.requiredCredits}</span>
-                          <span className="text-xs text-gray-400">кредитов</span>
+                      {currentLevel.requiredCrystals > 0 && (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                          <Diamond size={18} className="text-purple-400" />
+                          <span className="font-semibold text-purple-400">{currentLevel.requiredCrystals}</span>
+                          <span className="text-xs text-gray-400">кристаллов АМ</span>
                         </div>
                       )}
                     </div>
@@ -152,7 +166,7 @@ const Monolith = () => {
                         <h3 className="text-lg font-semibold mb-4">Доступ к покупкам в магазине:</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {currentLevel.unlocks.filter(u => u.type === 'item').map((unlock) => (
-                            <div key={unlock.id} className="card">
+                            <div key={unlock.id} className="card hover:border-cyan-500/30 transition-all cursor-pointer">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <Package size={16} className="text-cyan-400" />
@@ -165,14 +179,13 @@ const Monolith = () => {
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                   {unlock.item?.price > 0 && (
-                                    <span className="text-blue-400 font-semibold text-sm flex items-center gap-1">
-                                      <CreditCard size={14} />
-                                      {unlock.item.price}
+                                    <span className="text-blue-400 font-semibold text-xs flex items-center gap-1">
+                                      {unlock.item.price} кред.
                                     </span>
                                   )}
                                   {unlock.item?.crystalPrice > 0 && (
-                                    <span className="text-purple-400 font-semibold text-sm flex items-center gap-1">
-                                      <Diamond size={14} />
+                                    <span className="text-purple-400 font-semibold text-xs flex items-center gap-1">
+                                      <Diamond size={12} />
                                       {unlock.item.crystalPrice}
                                     </span>
                                   )}
@@ -197,9 +210,8 @@ const Monolith = () => {
                                   <span className="text-gray-300">{unlock.upgradeName}</span>
                                 </div>
                                 {unlock.upgradeCost && (
-                                  <span className="text-blue-400 font-semibold flex items-center gap-1">
-                                    <CreditCard size={14} />
-                                    {unlock.upgradeCost}
+                                  <span className="text-blue-400 font-semibold text-sm">
+                                    {unlock.upgradeCost} кред.
                                   </span>
                                 )}
                               </div>
