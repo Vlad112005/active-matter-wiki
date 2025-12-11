@@ -1,0 +1,208 @@
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  const items = [
+    {
+      name: 'M4A1',
+      description: 'Assault rifle. 5.56x45 NATO. High accuracy and modular design.',
+      type: 'weapon',
+      rarity: 'rare',
+      price: 45000,
+      weight: 3.4,
+      stackable: false,
+      maxStack: 1,
+      source: ['Military Base', 'Headquarters'],
+      tags: ['assault_rifle', 'nato', '556'],
+    },
+    {
+      name: 'AK-103',
+      description: 'Assault rifle. 7.62x39mm. Reliable and powerful.',
+      type: 'weapon',
+      rarity: 'rare',
+      price: 38000,
+      weight: 3.6,
+      stackable: false,
+      maxStack: 1,
+      source: ['Scrapyard', 'Factory'],
+      tags: ['assault_rifle', 'ak', '762'],
+    },
+    {
+      name: 'MP5',
+      description: 'Submachine gun. 9x19mm. Compact and high rate of fire.',
+      type: 'weapon',
+      rarity: 'uncommon',
+      price: 22000,
+      weight: 2.5,
+      stackable: false,
+      maxStack: 1,
+      source: ['Factory', 'Cargo Port'],
+      tags: ['smg', '9mm'],
+    },
+    {
+      name: 'SPAS-12',
+      description: 'Shotgun. 12 gauge. Devastating close-range weapon.',
+      type: 'weapon',
+      rarity: 'epic',
+      price: 52000,
+      weight: 4.2,
+      stackable: false,
+      maxStack: 1,
+      source: ['Headquarters'],
+      tags: ['shotgun', '12gauge'],
+    },
+    {
+      name: 'SV-98',
+      description: 'Sniper rifle. 7.62x54mmR. Long-range precision.',
+      type: 'weapon',
+      rarity: 'epic',
+      price: 68000,
+      weight: 5.8,
+      stackable: false,
+      maxStack: 1,
+      source: ['Military Base', 'Headquarters'],
+      tags: ['sniper', '762'],
+    },
+    {
+      name: 'Combat Knife',
+      description: 'Melee weapon. Silent and deadly.',
+      type: 'weapon',
+      rarity: 'common',
+      price: 1200,
+      weight: 0.45,
+      stackable: false,
+      maxStack: 1,
+      source: ['All locations'],
+      tags: ['melee', 'knife'],
+    },
+    {
+      name: 'War Hammer',
+      description: 'Melee weapon. Heavy blunt damage.',
+      type: 'weapon',
+      rarity: 'uncommon',
+      price: 3500,
+      weight: 1.15,
+      stackable: false,
+      maxStack: 1,
+      source: ['Scrapyard', 'Factory'],
+      tags: ['melee', 'blunt'],
+    },
+    {
+      name: 'A3 Helmet',
+      description: 'Protective headgear. Ballistic protection level 3.',
+      type: 'armor',
+      rarity: 'uncommon',
+      price: 8500,
+      weight: 1.2,
+      stackable: false,
+      maxStack: 1,
+      source: ['Military Base'],
+      tags: ['helmet', 'armor'],
+    },
+    {
+      name: 'Tactical Vest',
+      description: 'Body armor. Medium protection with storage.',
+      type: 'armor',
+      rarity: 'rare',
+      price: 25000,
+      weight: 3.8,
+      stackable: false,
+      maxStack: 1,
+      source: ['Military Base', 'Headquarters'],
+      tags: ['vest', 'armor'],
+    },
+    {
+      name: 'Medkit',
+      description: 'First aid kit. Restores 60 HP over time.',
+      type: 'consumable',
+      rarity: 'common',
+      price: 2500,
+      weight: 0.4,
+      stackable: true,
+      maxStack: 5,
+      source: ['All locations'],
+      tags: ['healing', 'medical'],
+    },
+    {
+      name: 'Painkiller',
+      description: 'Pain relief medication. Reduces pain effects for 180s.',
+      type: 'consumable',
+      rarity: 'common',
+      price: 1200,
+      weight: 0.1,
+      stackable: true,
+      maxStack: 10,
+      source: ['All locations'],
+      tags: ['medical', 'buff'],
+    },
+    {
+      name: 'Energy Drink',
+      description: 'Restores stamina and increases movement speed.',
+      type: 'consumable',
+      rarity: 'uncommon',
+      price: 1800,
+      weight: 0.3,
+      stackable: true,
+      maxStack: 5,
+      source: ['Factory', 'Cargo Port'],
+      tags: ['buff', 'stamina'],
+    },
+    {
+      name: 'Crystallised Active Matter',
+      description: 'Premium currency. Used for upgrades and crafting.',
+      type: 'quest',
+      rarity: 'legendary',
+      price: 0,
+      weight: 0.1,
+      stackable: true,
+      maxStack: 999,
+      source: ['Active Matter clusters', 'Boss drops'],
+      tags: ['currency', 'premium'],
+    },
+    {
+      name: 'Small Backpack',
+      description: 'Storage container. 20 slots capacity.',
+      type: 'other',
+      rarity: 'common',
+      price: 4500,
+      weight: 0.8,
+      stackable: false,
+      maxStack: 1,
+      source: ['All locations'],
+      tags: ['storage', 'backpack'],
+    },
+    {
+      name: 'Medium Backpack',
+      description: 'Storage container. 35 slots capacity.',
+      type: 'other',
+      rarity: 'uncommon',
+      price: 12000,
+      weight: 1.2,
+      stackable: false,
+      maxStack: 1,
+      source: ['Military Base', 'Headquarters'],
+      tags: ['storage', 'backpack'],
+    },
+  ];
+
+  for (const item of items) {
+    await prisma.item.upsert({
+      where: { name: item.name },
+      update: {},
+      create: item,
+    });
+  }
+
+  console.log(`Seeded ${items.length} items`);
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

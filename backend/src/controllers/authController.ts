@@ -1,170 +1,153 @@
-import { Request, Response, NextFunction } from 'express';
-import bcrypt from 'bcryptjs';
+import { Request, Response } from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../database/client.js';
-import { generateToken } from '../utils/jwt.js';
-import { AppError } from '../types/index.js';
+import { AuthRequest } from '../middleware/auth.js';
 
-// LOGIN
-export async function login(req: Request, res: Response, next: NextFunction) {
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = '7d';
+
+export const register = async (req: Request, res: Response) => {
+  try {
+    const { email, username, password } = req.body;
+
+    const existingUser = await prisma.user.findFirst({
+      where: { OR: [{ email }, { username }] },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'USER_EXISTS', message: 'Email or username already exists' },
+      });
+    }
+
+    const userRole = await prisma.role.findUnique({ where: { name: 'user' } });
+    if (!userRole) {
+      return res.status(500).json({ success: false, error: { code: 'ROLE_NOT_FOUND', message: 'Default role not found' } });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        username,
+        passwordHash,
+        roleId: userRole.id,
+      },
+      include: { role: true },
+    });
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role.name,
+        },
+        token,
+        expiresIn: JWT_EXPIRES_IN,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: { code: 'REGISTRATION_FAILED', message: error.message } });
+  }
+};
+
+export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
-    // Validation
-    if (!username || !password) {
-      return next(
-        new AppError(400, 'VALIDATION_ERROR', 'Username and password required')
-      );
-    }
-
-    // Find admin
-    const admin = await prisma.admin.findUnique({
-      where: { username },
+    const user = await prisma.user.findFirst({
+      where: { OR: [{ email: username }, { username }] },
+      include: { role: true },
     });
 
-    if (!admin) {
-      return next(
-        new AppError(401, 'UNAUTHORIZED', 'Invalid username or password')
-      );
+    if (!user || !user.passwordHash) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' },
+      });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      return next(
-        new AppError(401, 'UNAUTHORIZED', 'Invalid username or password')
-      );
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_CREDENTIALS', message: 'Invalid credentials' },
+      });
     }
 
-    // Generate token
-    const token = generateToken({
-      id: admin.id,
-      username: admin.username,
-      email: admin.email,
-      role: admin.role,
-    });
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 
-    res.json({
+    return res.json({
       success: true,
       data: {
-        id: admin.id,
-        username: admin.username,
-        email: admin.email,
-        role: admin.role,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role.name,
+          isPremium: user.isPremium,
+        },
+        token,
+        expiresIn: JWT_EXPIRES_IN,
       },
-      token,
-      expiresIn: process.env.JWT_EXPIRE || '7d',
     });
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: { code: 'LOGIN_FAILED', message: error.message } });
   }
-}
+};
 
-// REGISTER (admin only)
-export async function register(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export const logout = async (req: AuthRequest, res: Response) => {
+  return res.json({ success: true, message: 'Logged out successfully' });
+};
+
+export const getMe = async (req: AuthRequest, res: Response) => {
   try {
-    const { username, email, password, role = 'editor' } = req.body;
+    const user = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      include: { role: true },
+    });
 
-    // Validation
-    if (!username || !email || !password) {
-      return next(
-        new AppError(400, 'VALIDATION_ERROR', 'Missing required fields')
-      );
+    if (!user) {
+      return res.status(404).json({ success: false, error: { code: 'USER_NOT_FOUND', message: 'User not found' } });
     }
 
-    // Check if user exists
-    const existing = await prisma.admin.findFirst({
-      where: {
-        OR: [{ username }, { email }],
-      },
-    });
-
-    if (existing) {
-      return next(
-        new AppError(409, 'CONFLICT', 'Username or email already exists')
-      );
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create admin
-    const admin = await prisma.admin.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-        role,
-      },
-    });
-
-    // Generate token
-    const token = generateToken({
-      id: admin.id,
-      username: admin.username,
-      email: admin.email,
-      role: admin.role,
-    });
-
-    res.status(201).json({
+    return res.json({
       success: true,
       data: {
-        id: admin.id,
-        username: admin.username,
-        email: admin.email,
-        role: admin.role,
-      },
-      token,
-      expiresIn: process.env.JWT_EXPIRE || '7d',
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-// LOGOUT
-export async function logout(req: Request, res: Response, next: NextFunction) {
-  try {
-    // In a real app, you might invalidate the token in Redis or database
-    res.json({
-      success: true,
-      message: 'Logged out successfully',
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-// GET current user
-export async function getMe(req: Request, res: Response, next: NextFunction) {
-  try {
-    if (!req.user) {
-      return next(new AppError(401, 'UNAUTHORIZED', 'Authentication required'));
-    }
-
-    const admin = await prisma.admin.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        createdAt: true,
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role.name,
+        isPremium: user.isPremium,
+        premiumUntil: user.premiumUntil,
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt,
       },
     });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: { code: 'FETCH_FAILED', message: error.message } });
+  }
+};
 
-    if (!admin) {
-      return next(new AppError(404, 'NOT_FOUND', 'User not found'));
+export const discordCallback = async (req: Request, res: Response) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({ success: false, error: { code: 'NO_CODE', message: 'No authorization code' } });
     }
 
-    res.json({
-      success: true,
-      data: admin,
-    });
-  } catch (error) {
-    next(error);
+    // Exchange code for Discord token (implement Discord OAuth2 flow)
+    // For now, returning placeholder
+    return res.json({ success: true, message: 'Discord OAuth not fully implemented yet' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: { code: 'DISCORD_AUTH_FAILED', message: error.message } });
   }
-}
+};
