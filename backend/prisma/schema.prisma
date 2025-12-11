@@ -7,341 +7,158 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// === ПОЛЬЗОВАТЕЛИ ===
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  password      String
+  avatar        String?
+  bio           String?
+  discordId     String?   @unique
+  isPremium     Boolean   @default(false)
+  premiumUntil  DateTime?
+  createdAt     DateTime  @default(now())
+  roleId        String?
+  role          Role?     @relation(fields: [roleId], references: [id])
+  guides        Guide[]
+  comments      Comment[]
+}
+
 model Role {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
   displayName String
   description String?
   users       User[]
 }
 
-model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  username       String   @unique
-  passwordHash   String?
-  discordId      String?  @unique
-  avatarUrl      String?
-  bio            String?  @db.Text
-  roleId         String
-  role           Role     @relation(fields: [roleId], references: [id])
-  isPremium      Boolean  @default(false)
-  premiumUntil   DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  guides         Guide[]  @relation("GuideAuthor")
-  auditLogs      AuditLog[]
-}
-
+// === ПРЕДМЕТЫ ===
 model Item {
-  id                  String   @id @default(cuid())
-  
-  // Русский язык
-  name                String
-  description         String   @db.Text
-  
-  // Английский язык (опционально)
-  nameEn              String?
-  descriptionEn       String?  @db.Text
-  
-  image               String?
-  type                String
-  rarity              String
-  
-  // Цены
-  price               Int      @default(0)  // Жетоны монолита
-  silverPrice         Int?                   // Кредиты (серебро)
-  replicationPoints   Int?
-  
-  // Монолит
-  monolithLevel       String?  // ALPHA, BETA, GAMMA и т.д.
-  
-  // Характеристики
-  weight              Float    @default(0)
-  stackable           Boolean  @default(false)
-  maxStack            Int      @default(1)
-  
-  // Дополнительная информация
-  source              String[]
-  sourceEn            String[]
-  tags                String[]
-  isQuestItem         Boolean  @default(false)
-  
-  // Статистики
-  damage              Int?
-  armor               Int?
-  durability          Int?
-  
-  locations           Location[]
-  lootSpawns          LocationLoot[]
-  craftIngredients    CraftIngredient[]
-  craftResults        CraftRecipe[]
-  monolithUnlocks     MonolithUnlock[]  // Связь с монолитом
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
-  @@unique([name])
-  @@index([type])
-  @@index([rarity])
-  @@index([name])
-  @@index([monolithLevel])
+  id                 String            @id @default(cuid())
+  name               String            @unique
+  nameEn             String?
+  description        String
+  descriptionEn      String?
+  image              String?
+  type               String
+  rarity             String
+  price              Int               @default(0)          // КРЕДИТЫ (основная валюта)
+  crystalPrice       Int               @default(0)          // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (премиум)
+  replicationPoints  Int               @default(0)
+  monolithLevel      String?
+  weight             Float             @default(0)
+  stackable          Boolean           @default(false)
+  maxStack           Int               @default(1)
+  source             String[]
+  sourceEn           String[]
+  tags               String[]
+  isQuestItem        Boolean           @default(false)
+  damage             Int               @default(0)
+  armor              Int               @default(0)
+  durability         Int               @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  monolithUnlocks    MonolithUnlock[]
 }
 
-// НОВАЯ МОДЕЛЬ: Уровни монолита
+// === МОНОЛИТ ===
 model MonolithLevel {
-  id              String   @id @default(cuid())
-  code            String   @unique  // ALPHA, BETA, GAMMA и т.д.
-  order           Int      @unique  // Порядковый номер (1, 2, 3...)
-  
-  // Русский
-  name            String   // Уровень допуска: АЛЬФА
-  nameEn          String?  // Access Level: ALPHA
-  
-  // Требования для открытия
-  requiredTokens  Int?     // Жетоны монолита
-  requiredCredits Int?     // Кредиты
-  requiredItems   String[] // ID предметов которые нужны
-  
-  // Что открывается
-  unlocks         MonolithUnlock[]
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([code])
-  @@index([order])
+  id                String           @id @default(cuid())
+  code              String           @unique
+  order             Int              @unique
+  name              String
+  nameEn            String?
+  requiredTokens    Int?             // ЖЕТОНЫ МОНОЛИТА (для открытия уровня)
+  requiredCredits   Int?             // КРЕДИТЫ (доп. требование)
+  unlocks           MonolithUnlock[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }
 
-// НОВАЯ МОДЕЛЬ: Что открывается на уровне монолита
 model MonolithUnlock {
   id              String         @id @default(cuid())
   monolithLevelId String
   monolithLevel   MonolithLevel  @relation(fields: [monolithLevelId], references: [id], onDelete: Cascade)
-  
-  type            String         // item, upgrade, recipe, chrono, skin
-  
-  // Если это предмет
+  type            String         // item, upgrade, recipe, chrono
   itemId          String?
   item            Item?          @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  
-  // Если это апгрейд убежища
-  upgradeName     String?        // Расширение склада +2500 объёма
+  upgradeName     String?
   upgradeNameEn   String?
-  upgradeCost     Int?           // Стоимость в жетонах
-  
-  // Если это рецепт переработчика
-  recipeName      String?        // Хроногены (из Пожирателя)
+  upgradeCost     Int?           // КРЕДИТЫ
+  recipeName      String?
   recipeNameEn    String?
-  
-  // Если это хроноген
-  chronoName      String?        // Мелкая моторика III
+  chronoName      String?
   chronoNameEn    String?
-  isLocked        Boolean        @default(false)  // Заблокирован на будущее
-  
+  isLocked        Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  
-  @@index([monolithLevelId])
-  @@index([type])
-  @@index([itemId])
 }
 
+// === ЛОКАЦИИ ===
 model Location {
-  id              String   @id @default(cuid())
-  name            String
-  nameEn          String?
-  description     String   @db.Text
-  descriptionEn   String?  @db.Text
-  difficulty      String
-  mapImage        String?
-  tips            String[]
-  tipsEn          String[]
-  enemies         LocationEnemy[]
-  lootTable       LocationLoot[]
-  characters      Character[]
-  recommendedGear Item[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@unique([name])
-  @@index([difficulty])
-  @@index([name])
-}
-
-model LocationEnemy {
-  id         String   @id @default(cuid())
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  name       String
-  count      Int      @default(1)
-  level      Int?
-  
-  @@index([locationId])
-}
-
-model LocationLoot {
   id          String   @id @default(cuid())
-  locationId  String
-  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  itemId      String
-  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  spawnChance Float    @default(0.5)
-  quantity    Int      @default(1)
-  
-  @@index([locationId])
-  @@index([itemId])
+  name        String   @unique
+  nameEn      String?
+  description String
+  image       String?
+  dangerLevel String
+  lootTable   String[]
+  tips        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model CraftRecipe {
-  id          String            @id @default(cuid())
-  resultId    String
-  result      Item              @relation(fields: [resultId], references: [id], onDelete: Cascade)
-  ingredients CraftIngredient[]
-  
-  @@index([resultId])
-}
-
-model CraftIngredient {
-  id       String      @id @default(cuid())
-  recipeId String
-  recipe   CraftRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  itemId   String
-  item     Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  quantity Int         @default(1)
-  
-  @@index([recipeId])
-  @@index([itemId])
-}
-
+// === ГАЙДЫ ===
 model Guide {
-  id            String         @id @default(cuid())
-  slug          String         @unique
-  title         String
-  titleEn       String?
-  content       String         @db.Text
-  contentEn     String?        @db.Text
-  category      String
-  tags          String[]
-  coverImage    String?
-  rating        Float          @default(0)
-  views         Int            @default(0)
-  likes         Int            @default(0)
-  authorId      String
-  author        User           @relation("GuideAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  versions      GuideVersion[]
-  published     Boolean        @default(true)
-  featured      Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  
-  @@index([slug])
-  @@index([category])
-  @@index([published])
-}
-
-model GuideVersion {
-  id        String   @id @default(cuid())
-  guideId   String
-  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
-  version   Int
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  
-  @@index([guideId])
-}
-
-model Patch {
-  id          String        @id @default(cuid())
-  version     String        @unique
+  id          String    @id @default(cuid())
   title       String
   titleEn     String?
-  releaseDate DateTime
-  content     String        @db.Text
-  contentEn   String?       @db.Text
-  changes     PatchChange[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
-  @@index([releaseDate])
-}
-
-model PatchChange {
-  id            String @id @default(cuid())
-  patchId       String
-  patch         Patch  @relation(fields: [patchId], references: [id], onDelete: Cascade)
-  type          String
-  description   String
-  descriptionEn String?
-  
-  @@index([patchId])
-}
-
-model Character {
-  id          String    @id @default(cuid())
-  name        String
-  role        String
-  description String    @db.Text
-  image       String?
-  locationId  String?
-  location    Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  sells       String[]
-  buys        String[]
-  questsGiven Quest[]
+  slug        String    @unique
+  content     String
+  contentEn   String?
+  tags        String[]
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  published   Boolean   @default(false)
+  views       Int       @default(0)
+  rating      Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  
-  @@index([name])
-  @@index([locationId])
+  comments    Comment[]
 }
 
-model Quest {
-  id           String    @id @default(cuid())
-  title        String
-  description  String    @db.Text
-  difficulty   String
-  giverId      String
-  giver        Character @relation(fields: [giverId], references: [id], onDelete: Cascade)
-  reward       String
-  requirements String[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
-  @@index([giverId])
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  rating    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
+// === НОВОСТИ/ПАТЧИ ===
+model Patch {
+  id          String   @id @default(cuid())
+  version     String   @unique
+  title       String
+  titleEn     String?
+  content     String
+  contentEn   String?
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// === НАСТРОЙКИ ===
 model SiteSettings {
   id          String   @id @default(cuid())
   key         String   @unique
-  value       String   @db.Text
+  value       String
   description String?
   updatedAt   DateTime @updatedAt
   updatedBy   String?
-  
-  @@index([key])
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String
-  entity    String
-  entityId  String
-  changes   Json?
-  createdAt DateTime @default(now())
-  
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model PageView {
-  id        String   @id @default(cuid())
-  path      String
-  referrer  String?
-  userAgent String?
-  createdAt DateTime @default(now())
-  
-  @@index([path])
-  @@index([createdAt])
 }
