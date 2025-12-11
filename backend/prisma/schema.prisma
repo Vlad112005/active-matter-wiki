@@ -49,12 +49,12 @@ model Item {
   rarity              String
   
   // Цены
-  price               Int      @default(0)
-  silverPrice         Int?
+  price               Int      @default(0)  // Жетоны монолита
+  silverPrice         Int?                   // Кредиты (серебро)
   replicationPoints   Int?
   
   // Монолит
-  monolithLevel       Int?
+  monolithLevel       String?  // ALPHA, BETA, GAMMA и т.д.
   
   // Характеристики
   weight              Float    @default(0)
@@ -76,6 +76,7 @@ model Item {
   lootSpawns          LocationLoot[]
   craftIngredients    CraftIngredient[]
   craftResults        CraftRecipe[]
+  monolithUnlocks     MonolithUnlock[]  // Связь с монолитом
   
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -85,6 +86,65 @@ model Item {
   @@index([rarity])
   @@index([name])
   @@index([monolithLevel])
+}
+
+// НОВАЯ МОДЕЛЬ: Уровни монолита
+model MonolithLevel {
+  id              String   @id @default(cuid())
+  code            String   @unique  // ALPHA, BETA, GAMMA и т.д.
+  order           Int      @unique  // Порядковый номер (1, 2, 3...)
+  
+  // Русский
+  name            String   // Уровень допуска: АЛЬФА
+  nameEn          String?  // Access Level: ALPHA
+  
+  // Требования для открытия
+  requiredTokens  Int?     // Жетоны монолита
+  requiredCredits Int?     // Кредиты
+  requiredItems   String[] // ID предметов которые нужны
+  
+  // Что открывается
+  unlocks         MonolithUnlock[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([code])
+  @@index([order])
+}
+
+// НОВАЯ МОДЕЛЬ: Что открывается на уровне монолита
+model MonolithUnlock {
+  id              String         @id @default(cuid())
+  monolithLevelId String
+  monolithLevel   MonolithLevel  @relation(fields: [monolithLevelId], references: [id], onDelete: Cascade)
+  
+  type            String         // item, upgrade, recipe, chrono, skin
+  
+  // Если это предмет
+  itemId          String?
+  item            Item?          @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  // Если это апгрейд убежища
+  upgradeName     String?        // Расширение склада +2500 объёма
+  upgradeNameEn   String?
+  upgradeCost     Int?           // Стоимость в жетонах
+  
+  // Если это рецепт переработчика
+  recipeName      String?        // Хроногены (из Пожирателя)
+  recipeNameEn    String?
+  
+  // Если это хроноген
+  chronoName      String?        // Мелкая моторика III
+  chronoNameEn    String?
+  isLocked        Boolean        @default(false)  // Заблокирован на будущее
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([monolithLevelId])
+  @@index([type])
+  @@index([itemId])
 }
 
 model Location {
