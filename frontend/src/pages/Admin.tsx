@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, Package, Map, BookOpen, FileText, Settings, BarChart3 } from 'lucide-react';
+import { Shield, Users, Package, Map, BookOpen, FileText, Settings, BarChart3, Unlock } from 'lucide-react';
 import AdminUsers from './admin/AdminUsers';
 import AdminItems from './admin/AdminItems';
+import AdminMonolith from './admin/AdminMonolith';
 import AdminSettings from './admin/AdminSettings';
 
 const Admin = () => {
@@ -19,6 +20,7 @@ const Admin = () => {
   const tabs = [
     { id: 'users', label: 'Пользователи', icon: Users, access: ['admin', 'founder'] },
     { id: 'items', label: 'Предметы', icon: Package, access: ['admin', 'founder'] },
+    { id: 'monolith', label: 'Монолит', icon: Unlock, access: ['admin', 'founder'] },
     { id: 'locations', label: 'Локации', icon: Map, access: ['admin', 'founder'] },
     { id: 'guides', label: 'Гайды', icon: BookOpen, access: ['moderator', 'admin', 'founder'] },
     { id: 'patches', label: 'Патчи', icon: FileText, access: ['admin', 'founder'] },
@@ -78,6 +80,7 @@ const Admin = () => {
         <div className="animate-fade-in">
           {activeTab === 'users' && <AdminUsers />}
           {activeTab === 'items' && <AdminItems />}
+          {activeTab === 'monolith' && <AdminMonolith />}
           {activeTab === 'settings' && <AdminSettings />}
           {activeTab === 'locations' && (
             <div className="card text-center py-12">
