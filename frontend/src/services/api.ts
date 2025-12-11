@@ -15,7 +15,6 @@ class ApiClient {
       },
     });
 
-    // Add token to requests
     this.client.interceptors.request.use((config) => {
       if (this.token) {
         config.headers.Authorization = `Bearer ${this.token}`;
@@ -28,12 +27,13 @@ class ApiClient {
     this.token = token;
   }
 
-  // Auth endpoints
+  async register(data: { email: string; username: string; password: string }): Promise<LoginResponse> {
+    const response = await this.client.post<ApiResponse<LoginResponse>>('/auth/register', data);
+    return response.data.data as LoginResponse;
+  }
+
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await this.client.post<ApiResponse<LoginResponse>>(
-      '/auth/login',
-      credentials
-    );
+    const response = await this.client.post<ApiResponse<LoginResponse>>('/auth/login', credentials);
     return response.data.data as LoginResponse;
   }
 
@@ -46,7 +46,6 @@ class ApiClient {
     return response.data.data;
   }
 
-  // Items endpoints
   async getItems(params?: any) {
     const response = await this.client.get<ApiResponse<Item[]>>('/items', { params });
     return response.data;
@@ -78,7 +77,6 @@ class ApiClient {
     await this.client.delete(`/items/${id}`);
   }
 
-  // Locations endpoints
   async getLocations(params?: any) {
     const response = await this.client.get<ApiResponse<Location[]>>('/locations', { params });
     return response.data;
@@ -89,7 +87,6 @@ class ApiClient {
     return response.data.data;
   }
 
-  // Guides endpoints
   async getGuides(params?: any) {
     const response = await this.client.get<ApiResponse<Guide[]>>('/guides', { params });
     return response.data;
@@ -100,10 +97,28 @@ class ApiClient {
     return response.data.data;
   }
 
-  // Patches endpoints
+  async createGuide(data: Partial<Guide>) {
+    const response = await this.client.post<ApiResponse<Guide>>('/guides', data);
+    return response.data.data;
+  }
+
+  async updateGuide(slug: string, data: Partial<Guide>) {
+    const response = await this.client.put<ApiResponse<Guide>>(`/guides/${slug}`, data);
+    return response.data.data;
+  }
+
+  async deleteGuide(slug: string) {
+    await this.client.delete(`/guides/${slug}`);
+  }
+
   async getPatches(params?: any) {
     const response = await this.client.get<ApiResponse<Patch[]>>('/patches', { params });
     return response.data;
+  }
+
+  async getPatch(version: string) {
+    const response = await this.client.get<ApiResponse<Patch>>(`/patches/${version}`);
+    return response.data.data;
   }
 }
 

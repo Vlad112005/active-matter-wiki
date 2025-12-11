@@ -5,6 +5,7 @@ import { apiClient } from '../services/api';
 
 interface AuthStore extends AuthState {
   login: (username: string, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setToken: (token: string | null) => void;
   setUser: (user: LoginResponse['user'] | null) => void;
@@ -24,6 +25,16 @@ export const useAuthStore = create<AuthStore>(
 
       setUser: (user) => {
         set({ user, isAuthenticated: !!user });
+      },
+
+      register: async (email: string, username: string, password: string) => {
+        const response = await apiClient.register({ email, username, password });
+        set({
+          user: response.user,
+          token: response.token,
+          isAuthenticated: true,
+        });
+        apiClient.setToken(response.token);
       },
 
       login: async (username: string, password: string) => {
