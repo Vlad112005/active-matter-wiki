@@ -71,33 +71,23 @@ export const createItem = async (req: AuthRequest, res: Response) => {
       data: {
         name: data.name,
         description: data.description,
-        image: data.image,
+        image: data.image || '',
         type: data.type,
         rarity: data.rarity,
         price: data.price || 0,
         crystalPrice: data.crystalPrice || 0,
-        replicationPoints: data.replicationPoints,
-        monolithLevel: data.monolithLevel,
+        replicationPoints: data.replicationPoints || 0,
+        monolithLevel: data.monolithLevel || null,
         weight: data.weight || 0,
         stackable: data.stackable || false,
         maxStack: data.maxStack || 1,
         source: data.source || [],
+        sourceEn: data.sourceEn || [],
         tags: data.tags || [],
         isQuestItem: data.isQuestItem || false,
-        damage: data.damage,
-        armor: data.armor,
-        durability: data.durability,
-      },
-    });
-
-    // Логирование
-    await prisma.auditLog.create({
-      data: {
-        userId: req.user!.id,
-        action: 'CREATE_ITEM',
-        entity: 'Item',
-        entityId: item.id,
-        changes: data,
+        damage: data.damage || 0,
+        armor: data.armor || 0,
+        durability: data.durability || 0,
       },
     });
 
@@ -133,22 +123,12 @@ export const updateItem = async (req: AuthRequest, res: Response) => {
         ...(data.stackable !== undefined && { stackable: data.stackable }),
         ...(data.maxStack !== undefined && { maxStack: data.maxStack }),
         ...(data.source && { source: data.source }),
+        ...(data.sourceEn && { sourceEn: data.sourceEn }),
         ...(data.tags && { tags: data.tags }),
         ...(data.isQuestItem !== undefined && { isQuestItem: data.isQuestItem }),
         ...(data.damage !== undefined && { damage: data.damage }),
         ...(data.armor !== undefined && { armor: data.armor }),
         ...(data.durability !== undefined && { durability: data.durability }),
-      },
-    });
-
-    // Логирование
-    await prisma.auditLog.create({
-      data: {
-        userId: req.user!.id,
-        action: 'UPDATE_ITEM',
-        entity: 'Item',
-        entityId: item.id,
-        changes: data,
       },
     });
 
@@ -168,16 +148,6 @@ export const deleteItem = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
 
     await prisma.item.delete({ where: { id } });
-
-    // Логирование
-    await prisma.auditLog.create({
-      data: {
-        userId: req.user!.id,
-        action: 'DELETE_ITEM',
-        entity: 'Item',
-        entityId: id,
-      },
-    });
 
     return res.json({ success: true, message: 'Предмет удалён' });
   } catch (error: any) {
