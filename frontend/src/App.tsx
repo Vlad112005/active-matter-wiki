@@ -4,6 +4,7 @@ import { useAuthStore } from './store/authStore';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Items from './pages/Items';
+import ItemDetail from './pages/ItemDetail';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Profile from './pages/Profile';
@@ -16,7 +17,6 @@ function App() {
   const { settings, loading } = useSettings();
   const { user } = useAuthStore();
 
-  // Пока загружаются настройки
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0e1a] flex items-center justify-center">
@@ -25,7 +25,6 @@ function App() {
     );
   }
 
-  // Режим тех. работ (не для админов)
   const isAdmin = user?.role?.name && ['admin', 'founder'].includes(user.role.name);
   if (settings.maintenance_mode && !isAdmin) {
     return <Maintenance message={settings.maintenance_message} />;
@@ -36,9 +35,10 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="items" element={<Items />} />
-        <Route path="locations" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Локации</h1><p className="text-gray-400 mt-4">Скоро здесь появятся детальные карты всех локаций</p></div>} />
-        <Route path="guides" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Гайды</h1><p className="text-gray-400 mt-4">Скоро здесь появятся экспертные гайды</p></div>} />
-        <Route path="patches" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Патчи</h1><p className="text-gray-400 mt-4">Скоро здесь появятся все обновления игры</p></div>} />
+        <Route path="items/:id" element={<ItemDetail />} />
+        <Route path="locations" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Локации</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
+        <Route path="guides" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Гайды</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
+        <Route path="patches" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Патчи</h1><p className="text-gray-400 mt-4">Скоро...</p></div>} />
         <Route path="admin" element={<Admin />} />
         <Route path="profile/:id" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />

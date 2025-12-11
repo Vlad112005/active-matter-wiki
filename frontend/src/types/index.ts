@@ -4,48 +4,20 @@ export interface User {
   username: string;
   avatarUrl?: string;
   bio?: string;
-  role: {
-    id: string;
-    name: string;
-    displayName: string;
-    description?: string;
-  };
+  role?: Role;
+  roleId: string;
   isPremium: boolean;
   premiumUntil?: string;
   createdAt: string;
   updatedAt: string;
-  guides?: Array<{ id: string; title: string; slug: string }>;
+  guides?: Guide[];
 }
 
-export interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-}
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  user: User;
-  token: string;
-}
-
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-  error?: {
-    code: string;
-    message: string;
-  };
+export interface Role {
+  id: string;
+  name: string;
+  displayName: string;
+  description?: string;
 }
 
 export interface Item {
@@ -56,22 +28,18 @@ export interface Item {
   type: string;
   rarity: string;
   price: number;
+  silverPrice?: number;
+  replicationPoints?: number;
+  monolithLevel?: number;
   weight: number;
   stackable: boolean;
   maxStack: number;
   source: string[];
   tags: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Location {
-  id: string;
-  name: string;
-  description: string;
-  difficulty: string;
-  mapImage?: string;
-  tips: string[];
+  isQuestItem: boolean;
+  damage?: number;
+  armor?: number;
+  durability?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,8 +56,20 @@ export interface Guide {
   views: number;
   likes: number;
   authorId: string;
+  author?: User;
   published: boolean;
   featured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Location {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: string;
+  mapImage?: string;
+  tips: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -100,24 +80,13 @@ export interface Patch {
   title: string;
   releaseDate: string;
   content: string;
+  changes: PatchChange[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Role {
+export interface PatchChange {
   id: string;
-  name: string;
-  displayName: string;
-  description?: string;
-}
-
-export interface UserStats {
-  total: number;
-  premium: number;
-  byRole: Array<{
-    role: string;
-    displayName: string;
-    count: number;
-  }>;
-  recent: User[];
+  type: string;
+  description: string;
 }
