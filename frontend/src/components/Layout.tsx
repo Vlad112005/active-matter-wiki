@@ -13,7 +13,6 @@ const Layout = () => {
     navigate('/');
   };
 
-  // Проверка доступа к админке: moderator, admin, founder
   const hasAdminAccess = user?.role?.name && ['moderator', 'admin', 'founder'].includes(user.role.name);
 
   const navLinks = [
@@ -64,13 +63,21 @@ const Layout = () => {
                       Premium
                     </span>
                   )}
+                  <Link
+                    to={`/profile/${user?.id}`}
+                    className="btn-ghost flex items-center gap-1.5"
+                    title="Мой профиль"
+                  >
+                    <User size={16} />
+                    {user?.username}
+                  </Link>
                   {hasAdminAccess && (
                     <Link to="/admin" className="btn-secondary text-sm flex items-center gap-1.5">
                       <Shield size={16} />
                       Админка
                     </Link>
                   )}
-                  <button onClick={handleLogout} className="btn-ghost p-2">
+                  <button onClick={handleLogout} className="btn-ghost p-2" title="Выйти">
                     <LogOut size={18} />
                   </button>
                 </div>
@@ -107,6 +114,13 @@ const Layout = () => {
               ))}
               {isAuthenticated ? (
                 <>
+                  <Link
+                    to={`/profile/${user?.id}`}
+                    className="block px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Мой профиль
+                  </Link>
                   {hasAdminAccess && (
                     <Link
                       to="/admin"
@@ -117,7 +131,10 @@ const Layout = () => {
                     </Link>
                   )}
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
                     className="w-full text-left px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
                   >
                     Выход
