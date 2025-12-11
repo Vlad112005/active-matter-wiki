@@ -8,7 +8,7 @@ import {
   moveLevel,
 } from '../controllers/monolithController.js';
 import { authenticate } from '../middleware/auth.js';
-import { requireRole } from '../middleware/roles.js';
+import { requireAdmin } from '../middleware/roles.js';
 
 const router = Router();
 
@@ -16,10 +16,10 @@ const router = Router();
 router.get('/levels', getAllLevels);
 router.get('/levels/:code', getLevelByCode);
 
-// Админские маршруты
-router.post('/levels', authenticate, requireRole(['admin', 'founder']), createLevel);
-router.put('/levels/:id', authenticate, requireRole(['admin', 'founder']), updateLevel);
-router.delete('/levels/:id', authenticate, requireRole(['admin', 'founder']), deleteLevel);
-router.post('/levels/:id/move', authenticate, requireRole(['admin', 'founder']), moveLevel);
+// Админские маршруты (admin + founder)
+router.post('/levels', authenticate, requireAdmin, createLevel);
+router.put('/levels/:id', authenticate, requireAdmin, updateLevel);
+router.delete('/levels/:id', authenticate, requireAdmin, deleteLevel);
+router.post('/levels/:id/move', authenticate, requireAdmin, moveLevel);
 
 export default router;
