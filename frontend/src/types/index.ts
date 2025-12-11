@@ -1,13 +1,61 @@
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  avatarUrl?: string;
+  role: {
+    id: string;
+    name: string;
+    description?: string;
+  };
+  isPremium: boolean;
+  premiumUntil?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  user: User;
+  token: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  error?: {
+    code: string;
+    message: string;
+  };
+}
+
 export interface Item {
   id: string;
   name: string;
   description: string;
   image?: string;
-  type: 'weapon' | 'armor' | 'consumable' | 'quest' | 'other';
-  rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  type: string;
+  rarity: string;
   price: number;
   weight: number;
   stackable: boolean;
+  maxStack: number;
   source: string[];
   tags: string[];
   createdAt: string;
@@ -18,12 +66,9 @@ export interface Location {
   id: string;
   name: string;
   description: string;
-  difficulty: 'easy' | 'medium' | 'hard' | 'nightmare';
+  difficulty: string;
   mapImage?: string;
   tips: string[];
-  enemies: Array<{ name: string; count: number; level?: number }>;
-  loot: Array<{ itemId: string; spawnChance: number; quantity: number }>;
-  recommendedGear: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -39,10 +84,7 @@ export interface Guide {
   rating: number;
   views: number;
   likes: number;
-  author: {
-    id: string;
-    username: string;
-  };
+  authorId: string;
   published: boolean;
   featured: boolean;
   createdAt: string;
@@ -55,47 +97,6 @@ export interface Patch {
   title: string;
   releaseDate: string;
   content: string;
-  changes: Array<{
-    type: 'NEW' | 'CHANGED' | 'FIXED' | 'REMOVED';
-    description: string;
-  }>;
   createdAt: string;
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-  pagination?: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-  };
-}
-
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    role: string;
-  };
-  token: string;
-  expiresIn: string;
-}
-
-export interface AuthState {
-  user: LoginResponse['user'] | null;
-  token: string | null;
-  isAuthenticated: boolean;
+  updatedAt: string;
 }
