@@ -1,8 +1,20 @@
 import { Router } from 'express';
-import { discordCallback } from '../controllers/authController.js';
 
 const router = Router();
 
-router.get('/callback', discordCallback);
+// Discord OAuth placeholder - будет реализовано позже
+router.get('/auth', (req, res) => {
+  res.json({
+    success: false,
+    message: 'Discord OAuth пока не реализован. Используйте обычную регистрацию.',
+  });
+});
+
+router.get('/callback', (req, res) => {
+  res.json({
+    success: false,
+    message: 'Discord OAuth пока не реализован.',
+  });
+});
 
 export default router;
