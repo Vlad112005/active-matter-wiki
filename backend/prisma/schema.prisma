@@ -1,0 +1,263 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Admin User
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("admin") // admin, moderator, editor
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  guides Guide[]
+  logs   AuditLog[]
+}
+
+// Item/Weapon
+model Item {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  image       String?
+  type        String   // weapon, armor, consumable, quest, other
+  rarity      String   // common, uncommon, rare, epic, legendary
+  price       Int
+  weight      Float
+  stackable   Boolean  @default(false)
+  maxStack    Int      @default(1)
+  source      String[] // Where to find
+  tags        String[] // searchable tags
+
+  // Relations
+  locations Location[]
+  recipes   CraftRecipe[] @relation("Ingredients")
+  results   CraftRecipe[] @relation("Results")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([rarity])
+  @@index([name])
+}
+
+// Location/Map
+model Location {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @db.Text
+  difficulty  String   // easy, medium, hard, nightmare
+  mapImage    String?
+  tips        String[] // Tips and tricks
+
+  // Relations
+  enemies      LocationEnemy[]
+  lootTable    LocationLoot[]
+  characters   Character[]
+  recommendedGear Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([difficulty])
+  @@index([name])
+}
+
+// Enemies in Location
+model LocationEnemy {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], onDelete: Cascade)
+  name       String   // Enemy type/name
+  count      Int      @default(1) // Spawn count
+  level      Int?
+
+  @@index([locationId])
+}
+
+// Loot drops in Location
+model LocationLoot {
+  id         String   @id @default(cuid())
+  locationId String
+  location   Location @relation(fields: [locationId], onDelete: Cascade)
+  itemId     String
+  item       Item     @relation(fields: [itemId], onDelete: Cascade)
+  spawnChance Float   @default(0.5) // 0.0 - 1.0
+  quantity   Int      @default(1)
+
+  @@index([locationId])
+  @@index([itemId])
+}
+
+// Craft Recipe
+model CraftRecipe {
+  id      String   @id @default(cuid())
+  result  Item     @relation("Results", fields: [resultId], onDelete: Cascade)
+  resultId String
+  ingredients CraftIngredient[]
+
+  @@index([resultId])
+}
+
+// Craft Ingredients
+model CraftIngredient {
+  id       String       @id @default(cuid())
+  recipeId String
+  recipe   CraftRecipe  @relation(fields: [recipeId], onDelete: Cascade)
+  itemId   String
+  item     Item         @relation("Ingredients", fields: [itemId], onDelete: Cascade)
+  quantity Int          @default(1)
+
+  @@index([recipeId])
+  @@index([itemId])
+}
+
+// Guide/Article
+model Guide {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String   @db.Text // Markdown
+  category  String   // beginner, combat, magic, farming, trading, etc
+  tags      String[]
+  coverImage String?
+
+  // Stats
+  rating    Float    @default(0)
+  views     Int      @default(0)
+  likes     Int      @default(0)
+
+  // Relations
+  authorId  String
+  author    Admin    @relation(fields: [authorId], onDelete: SetNull)
+  versions  GuideVersion[]
+
+  // Meta
+  published Boolean  @default(true)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+  @@index([published])
+}
+
+// Guide Version History
+model GuideVersion {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], onDelete: Cascade)
+  version   Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([guideId])
+}
+
+// Patch Notes
+model Patch {
+  id          String   @id @default(cuid())
+  version     String   @unique // 1.2.5
+  title       String
+  releaseDate DateTime
+  content     String   @db.Text // Markdown
+  changes     PatchChange[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([releaseDate])
+}
+
+// Patch Changes
+model PatchChange {
+  id      String @id @default(cuid())
+  patchId String
+  patch   Patch  @relation(fields: [patchId], onDelete: Cascade)
+  type    String // NEW, CHANGED, FIXED, REMOVED
+  description String
+
+  @@index([patchId])
+}
+
+// Character/NPC
+model Character {
+  id         String   @id @default(cuid())
+  name       String
+  role       String   // merchant, quest-giver, boss, etc
+  description String  @db.Text
+  image      String?
+
+  // Location
+  locationId String?
+  location   Location? @relation(fields: [locationId], onDelete: SetNull)
+
+  // Trading
+  sells      String[] // Item IDs they sell
+  buys       String[] // Item IDs they buy
+
+  // Quests
+  questsGiven Quest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@index([locationId])
+}
+
+// Quest
+model Quest {
+  id          String   @id @default(cuid())
+  title       String
+  description String  @db.Text
+  difficulty  String  // easy, medium, hard, impossible
+  giver       Character @relation(fields: [giverId], onDelete: Cascade)
+  giverId     String
+  reward      String  // Description of rewards
+  requirements String[] // Prerequisites
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([giverId])
+}
+
+// Audit Log
+model AuditLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  admin     Admin    @relation(fields: [adminId], onDelete: SetNull)
+  action    String   // CREATE, UPDATE, DELETE
+  entity    String   // Item, Guide, Location, etc
+  entityId  String
+  changes   Json?
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([createdAt])
+}
+
+// Statistics
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
