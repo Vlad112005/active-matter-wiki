@@ -9,7 +9,8 @@ datasource db {
 
 model Role {
   id          String   @id @default(cuid())
-  name        String   @unique
+  name        String   @unique // user, premium, moderator, admin, founder
+  displayName String   // Отображаемое имя на русском
   description String?
   users       User[]
 }
@@ -21,6 +22,7 @@ model User {
   passwordHash   String?
   discordId      String?  @unique
   avatarUrl      String?
+  bio            String?  @db.Text // Биография пользователя
   roleId         String
   role           Role     @relation(fields: [roleId], references: [id])
   isPremium      Boolean  @default(false)

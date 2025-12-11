@@ -1,34 +1,32 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../client.js';
 
-const prisma = new PrismaClient();
+const roles = [
+  { name: 'user', displayName: 'Пользователь', description: 'Обычный пользователь с базовым доступом' },
+  { name: 'premium', displayName: 'Premium', description: 'Пользователь с премиум подпиской' },
+  { name: 'moderator', displayName: 'Модератор', description: 'Модератор контента' },
+  { name: 'admin', displayName: 'Администратор', description: 'Администратор системы' },
+  { name: 'founder', displayName: 'Основатель', description: 'Основатель проекта с полным доступом' },
+];
 
-async function main() {
-  // Create roles
-  const roles = [
-    { name: 'user', description: 'Обычный пользователь' },
-    { name: 'premium', description: 'Премиум пользователь с эксклюзивным доступом' },
-    { name: 'moderator', description: 'Модератор контента и новостей' },
-    { name: 'admin', description: 'Администратор, управляющий модераторами и контентом' },
-    { name: 'founder', description: 'Основатель с полными правами' },
-  ];
+const main = async () => {
+  console.log('Seeding roles...');
 
   for (const role of roles) {
     await prisma.role.upsert({
       where: { name: role.name },
-      update: {},
+      update: { displayName: role.displayName, description: role.description },
       create: role,
     });
   }
 
-  console.log('Base roles seeded');
-}
+  console.log('✅ Roles seeded successfully');
+};
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
+  .catch((e) => {
     console.error(e);
-    await prisma.$disconnect();
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
   });
