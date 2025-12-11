@@ -35,19 +35,26 @@ model User {
 
 model Item {
   id                  String   @id @default(cuid())
-  name                String   @unique
+  
+  // Русский язык
+  name                String
   description         String   @db.Text
+  
+  // Английский язык (опционально)
+  nameEn              String?
+  descriptionEn       String?  @db.Text
+  
   image               String?
-  type                String   // weapon, armor, consumable, resource, quest
-  rarity              String   // common, uncommon, rare, epic, legendary
+  type                String
+  rarity              String
   
   // Цены
-  price               Int      @default(0) // Базовая цена (жетоны)
-  silverPrice         Int?     // Цена за серебро
-  replicationPoints   Int?     // Очки для репликации
+  price               Int      @default(0)
+  silverPrice         Int?
+  replicationPoints   Int?
   
   // Монолит
-  monolithLevel       Int?     // Уровень монолита для разблокировки
+  monolithLevel       Int?
   
   // Характеристики
   weight              Float    @default(0)
@@ -55,11 +62,12 @@ model Item {
   maxStack            Int      @default(1)
   
   // Дополнительная информация
-  source              String[] // Где найти
+  source              String[]
+  sourceEn            String[]
   tags                String[]
   isQuestItem         Boolean  @default(false)
   
-  // Статистики (для оружия/брони)
+  // Статистики
   damage              Int?
   armor               Int?
   durability          Int?
@@ -72,6 +80,7 @@ model Item {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   
+  @@unique([name])
   @@index([type])
   @@index([rarity])
   @@index([name])
@@ -80,11 +89,14 @@ model Item {
 
 model Location {
   id              String   @id @default(cuid())
-  name            String   @unique
+  name            String
+  nameEn          String?
   description     String   @db.Text
+  descriptionEn   String?  @db.Text
   difficulty      String
   mapImage        String?
   tips            String[]
+  tipsEn          String[]
   enemies         LocationEnemy[]
   lootTable       LocationLoot[]
   characters      Character[]
@@ -92,6 +104,7 @@ model Location {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  @@unique([name])
   @@index([difficulty])
   @@index([name])
 }
@@ -142,23 +155,25 @@ model CraftIngredient {
 }
 
 model Guide {
-  id         String         @id @default(cuid())
-  slug       String         @unique
-  title      String
-  content    String         @db.Text
-  category   String
-  tags       String[]
-  coverImage String?
-  rating     Float          @default(0)
-  views      Int            @default(0)
-  likes      Int            @default(0)
-  authorId   String
-  author     User           @relation("GuideAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  versions   GuideVersion[]
-  published  Boolean        @default(true)
-  featured   Boolean        @default(false)
-  createdAt  DateTime       @default(now())
-  updatedAt  DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  slug          String         @unique
+  title         String
+  titleEn       String?
+  content       String         @db.Text
+  contentEn     String?        @db.Text
+  category      String
+  tags          String[]
+  coverImage    String?
+  rating        Float          @default(0)
+  views         Int            @default(0)
+  likes         Int            @default(0)
+  authorId      String
+  author        User           @relation("GuideAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  versions      GuideVersion[]
+  published     Boolean        @default(true)
+  featured      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   
   @@index([slug])
   @@index([category])
@@ -180,8 +195,10 @@ model Patch {
   id          String        @id @default(cuid())
   version     String        @unique
   title       String
+  titleEn     String?
   releaseDate DateTime
   content     String        @db.Text
+  contentEn   String?       @db.Text
   changes     PatchChange[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -190,11 +207,12 @@ model Patch {
 }
 
 model PatchChange {
-  id          String @id @default(cuid())
-  patchId     String
-  patch       Patch  @relation(fields: [patchId], references: [id], onDelete: Cascade)
-  type        String // added, changed, fixed, removed
-  description String
+  id            String @id @default(cuid())
+  patchId       String
+  patch         Patch  @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  type          String
+  description   String
+  descriptionEn String?
   
   @@index([patchId])
 }
