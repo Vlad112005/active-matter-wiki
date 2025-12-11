@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api';
-import { Lock, Unlock, Coins, CreditCard, Package, Wrench, Zap } from 'lucide-react';
+import { Unlock, Coins, CreditCard, Package, Wrench, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface MonolithUnlock {
@@ -94,35 +94,25 @@ const Monolith = () => {
           <div className="lg:col-span-1">
             <div className="card p-0 sticky top-24">
               <div className="p-4 border-b border-gray-800/50">
-                <h3 className="font-semibold">Уровни допуска монолита</h3>
+                <h3 className="font-semibold">Уровни допуска</h3>
               </div>
               <div className="space-y-1 p-2">
-                {levels.map((level) => {
-                  const isLocked = level.order > 8; // ЙОТА и выше заблокированы
-                  return (
-                    <button
-                      key={level.code}
-                      onClick={() => !isLocked && setSelectedLevel(level.code)}
-                      disabled={isLocked}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
-                        selectedLevel === level.code
-                          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                          : isLocked
-                          ? 'text-gray-600 cursor-not-allowed'
-                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{level.name}</span>
-                        {isLocked ? (
-                          <Lock size={14} className="text-gray-600" />
-                        ) : (
-                          <Unlock size={14} className="text-green-400" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+                {levels.map((level) => (
+                  <button
+                    key={level.code}
+                    onClick={() => setSelectedLevel(level.code)}
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
+                      selectedLevel === level.code
+                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">{level.name}</span>
+                      <Unlock size={14} className="text-green-400" />
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
@@ -136,16 +126,16 @@ const Monolith = () => {
                   <h2 className="text-2xl font-bold mb-4">{currentLevel.name}</h2>
                   
                   {/* Требования */}
-                  {(currentLevel.requiredTokens || currentLevel.requiredCredits) && (
+                  {(currentLevel.requiredTokens || currentLevel.requiredCredits) ? (
                     <div className="flex items-center gap-4 mb-4">
-                      {currentLevel.requiredTokens && (
+                      {currentLevel.requiredTokens > 0 && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                           <Coins size={18} className="text-amber-400" />
                           <span className="font-semibold text-amber-400">{currentLevel.requiredTokens}₽</span>
                           <span className="text-xs text-gray-400">жетонов</span>
                         </div>
                       )}
-                      {currentLevel.requiredCredits && (
+                      {currentLevel.requiredCredits > 0 && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                           <CreditCard size={18} className="text-blue-400" />
                           <span className="font-semibold text-blue-400">{currentLevel.requiredCredits}</span>
@@ -153,36 +143,16 @@ const Monolith = () => {
                         </div>
                       )}
                     </div>
-                  )}
-
-                  {currentLevel.order > 8 && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                      <p className="text-red-400 text-sm font-medium">⚠️ Требуется предыдущий уровень допуска</p>
+                  ) : (
+                    <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg mb-4">
+                      <p className="text-green-400 text-sm font-medium">✅ Доступно сразу</p>
                     </div>
                   )}
                 </div>
 
                 {/* Что открывается */}
-                {currentLevel.unlocks && currentLevel.unlocks.length > 0 && (
+                {currentLevel.unlocks && currentLevel.unlocks.length > 0 ? (
                   <div>
-                    {/* Немедленный доступ */}
-                    {currentLevel.unlocks.some(u => u.type === 'immediate') && (
-                      <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-4">Немедленный доступ:</h3>
-                        <div className="space-y-2">
-                          {currentLevel.unlocks.filter(u => u.type === 'immediate').map((unlock) => (
-                            <div key={unlock.id} className="card">
-                              <div className="flex items-center gap-3">
-                                {getUnlockIcon(unlock.type)}
-                                <span className="text-gray-300">{unlock.upgradeName || unlock.recipeName}</span>
-                                {unlock.isLocked && <Lock size={14} className="text-red-400 ml-auto" />}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Доступ к покупкам */}
                     {currentLevel.unlocks.some(u => u.type === 'item') && (
                       <div className="mb-6">
@@ -196,14 +166,13 @@ const Monolith = () => {
                                   <div>
                                     <div className="font-medium text-sm">{unlock.item?.name || 'Предмет'}</div>
                                     {unlock.item?.type && (
-                                      <div className="text-xs text-gray-500">{'доступ и чертеж'}</div>
+                                      <div className="text-xs text-gray-500 capitalize">{unlock.item.type}</div>
                                     )}
                                   </div>
                                 </div>
                                 {unlock.item?.price > 0 && (
                                   <span className="text-amber-400 font-semibold text-sm">₽{unlock.item.price}</span>
                                 )}
-                                {unlock.isLocked && <Lock size={14} className="text-red-400" />}
                               </div>
                             </div>
                           ))}
@@ -262,7 +231,6 @@ const Monolith = () => {
                                   <Zap size={16} className="text-cyan-400" />
                                   <span className="text-gray-300 text-sm">{unlock.chronoName}</span>
                                 </div>
-                                {unlock.isLocked && <Lock size={14} className="text-red-400" />}
                               </div>
                             </div>
                           ))}
@@ -270,9 +238,7 @@ const Monolith = () => {
                       </div>
                     )}
                   </div>
-                )}
-
-                {(!currentLevel.unlocks || currentLevel.unlocks.length === 0) && (
+                ) : (
                   <div className="card text-center py-12">
                     <Package className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold mb-2">Пока пусто</h3>
