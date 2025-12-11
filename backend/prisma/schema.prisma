@@ -43,8 +43,8 @@ model Item {
   image              String?
   type               String
   rarity             String
-  price              Int               @default(0)          // КРЕДИТЫ (основная валюта)
-  crystalPrice       Int               @default(0)          // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (премиум)
+  price              Int               @default(0)          // КРЕДИТЫ (основная валюта для покупки предметов)
+  crystalPrice       Int               @default(0)          // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (редкие предметы)
   replicationPoints  Int               @default(0)
   monolithLevel      String?
   weight             Float             @default(0)
@@ -64,16 +64,16 @@ model Item {
 
 // === МОНОЛИТ ===
 model MonolithLevel {
-  id                String           @id @default(cuid())
-  code              String           @unique
-  order             Int              @unique
-  name              String
-  nameEn            String?
-  requiredTokens    Int?             // ЖЕТОНЫ МОНОЛИТА (для открытия уровня)
-  requiredCredits   Int?             // КРЕДИТЫ (доп. требование)
-  unlocks           MonolithUnlock[]
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  id                 String           @id @default(cuid())
+  code               String           @unique
+  order              Int              @unique
+  name               String
+  nameEn             String?
+  requiredTokens     Int?             // ЖЕТОНЫ МОНОЛИТА (для открытия уровня)
+  requiredCrystals   Int?             // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (доп. требование для открытия уровня)
+  unlocks            MonolithUnlock[]
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 }
 
 model MonolithUnlock {
@@ -85,7 +85,7 @@ model MonolithUnlock {
   item            Item?          @relation(fields: [itemId], references: [id], onDelete: Cascade)
   upgradeName     String?
   upgradeNameEn   String?
-  upgradeCost     Int?           // КРЕДИТЫ
+  upgradeCost     Int?           // КРЕДИТЫ (стоимость улучшения)
   recipeName      String?
   recipeNameEn    String?
   chronoName      String?
@@ -161,4 +161,15 @@ model SiteSettings {
   description String?
   updatedAt   DateTime @updatedAt
   updatedBy   String?
+}
+
+// === АУДИТ ===
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  changes   Json?
+  createdAt DateTime @default(now())
 }
