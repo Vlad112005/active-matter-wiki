@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Items from './pages/Items';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
+import Profile from './pages/Profile';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Cookies from './pages/Cookies';
@@ -18,6 +19,7 @@ function App() {
         <Route path="guides" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Гайды</h1><p className="text-gray-400 mt-4">Скоро здесь появятся экспертные гайды</p></div>} />
         <Route path="patches" element={<div className="container-max section-padding"><h1 className="text-4xl font-bold">Патчи</h1><p className="text-gray-400 mt-4">Скоро здесь появятся все обновления игры</p></div>} />
         <Route path="admin" element={<Admin />} />
+        <Route path="profile/:id" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />
         <Route path="cookies" element={<Cookies />} />
