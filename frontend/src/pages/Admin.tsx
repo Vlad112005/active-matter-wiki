@@ -3,6 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import { Navigate } from 'react-router-dom';
 import { Shield, Users, Package, Map, BookOpen, FileText, Settings, BarChart3 } from 'lucide-react';
 import AdminUsers from './admin/AdminUsers';
+import AdminSettings from './admin/AdminSettings';
 
 const Admin = () => {
   const { user } = useAuthStore();
@@ -21,7 +22,7 @@ const Admin = () => {
     { id: 'guides', label: 'Гайды', icon: BookOpen, access: ['moderator', 'admin', 'founder'] },
     { id: 'patches', label: 'Патчи', icon: FileText, access: ['admin', 'founder'] },
     { id: 'analytics', label: 'Аналитика', icon: BarChart3, access: ['moderator', 'admin', 'founder'] },
-    { id: 'settings', label: 'Настройки', icon: Settings, access: ['founder'] },
+    { id: 'settings', label: 'Настройки', icon: Settings, access: ['admin', 'founder'] },
   ];
 
   const hasTabAccess = (tabAccess: string[]) => {
@@ -75,6 +76,7 @@ const Admin = () => {
         {/* Контент */}
         <div className="animate-fade-in">
           {activeTab === 'users' && <AdminUsers />}
+          {activeTab === 'settings' && <AdminSettings />}
           {activeTab === 'items' && (
             <div className="card text-center py-12">
               <Package className="w-16 h-16 text-cyan-400 mx-auto mb-4 opacity-50" />
@@ -107,13 +109,6 @@ const Admin = () => {
             <div className="card text-center py-12">
               <BarChart3 className="w-16 h-16 text-cyan-400 mx-auto mb-4 opacity-50" />
               <h3 className="text-xl font-semibold mb-2">Аналитика</h3>
-              <p className="text-gray-400">В разработке...</p>
-            </div>
-          )}
-          {activeTab === 'settings' && (
-            <div className="card text-center py-12">
-              <Settings className="w-16 h-16 text-cyan-400 mx-auto mb-4 opacity-50" />
-              <h3 className="text-xl font-semibold mb-2">Настройки системы</h3>
               <p className="text-gray-400">В разработке...</p>
             </div>
           )}
