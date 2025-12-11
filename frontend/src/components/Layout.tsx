@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Crown } from 'lucide-react';
+import { Menu, X, LogOut, User, Crown, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 
@@ -12,6 +12,9 @@ const Layout = () => {
     await logout();
     navigate('/');
   };
+
+  // Проверка доступа к админке: moderator, admin, founder
+  const hasAdminAccess = user?.role?.name && ['moderator', 'admin', 'founder'].includes(user.role.name);
 
   const navLinks = [
     { label: 'Главная', path: '/' },
@@ -61,12 +64,14 @@ const Layout = () => {
                       Premium
                     </span>
                   )}
-                  <Link to="/admin" className="btn-secondary text-sm">
-                    <User size={16} className="inline mr-1.5" />
-                    Админка
-                  </Link>
-                  <button onClick={handleLogout} className="btn-ghost">
-                    <LogOut size={16} />
+                  {hasAdminAccess && (
+                    <Link to="/admin" className="btn-secondary text-sm flex items-center gap-1.5">
+                      <Shield size={16} />
+                      Админка
+                    </Link>
+                  )}
+                  <button onClick={handleLogout} className="btn-ghost p-2">
+                    <LogOut size={18} />
                   </button>
                 </div>
               ) : (
@@ -102,13 +107,15 @@ const Layout = () => {
               ))}
               {isAuthenticated ? (
                 <>
-                  <Link
-                    to="/admin"
-                    className="block px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Админ панель
-                  </Link>
+                  {hasAdminAccess && (
+                    <Link
+                      to="/admin"
+                      className="block px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Админ панель
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="w-full text-left px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
@@ -135,14 +142,17 @@ const Layout = () => {
         <Outlet />
       </main>
 
-      {/* Footer */}
+      {/* Footer - Legal for RU */}
       <footer className="border-t border-gray-800/30 bg-[#0f1420]/50 backdrop-blur-xl py-12 mt-auto">
         <div className="container-max">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="font-semibold text-cyan-400 mb-3 text-sm">Active Matter Wiki</h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-gray-500 leading-relaxed mb-4">
                 Информационный портал для игры Active Matter с полным каталогом предметов, локаций и гайдов.
+              </p>
+              <p className="text-xs text-gray-600">
+                Проект не является официальным и не связан с разработчиками Active Matter.
               </p>
             </div>
             <div>
@@ -157,22 +167,34 @@ const Layout = () => {
             <div>
               <h4 className="font-medium mb-3 text-sm">Сообщество</h4>
               <ul className="space-y-2 text-xs text-gray-500">
-                <li><a href="#" className="hover:text-cyan-400">Discord</a></li>
-                <li><a href="#" className="hover:text-cyan-400">Reddit</a></li>
-                <li><a href="#" className="hover:text-cyan-400">Twitter</a></li>
+                <li><a href="#" className="hover:text-cyan-400">Discord сервер</a></li>
+                <li><a href="#" className="hover:text-cyan-400">Telegram канал</a></li>
+                <li><a href="#" className="hover:text-cyan-400">VK группа</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium mb-3 text-sm">О проекте</h4>
+              <h4 className="font-medium mb-3 text-sm">Правовая информация</h4>
               <ul className="space-y-2 text-xs text-gray-500">
-                <li><a href="#" className="hover:text-cyan-400">О нас</a></li>
-                <li><a href="#" className="hover:text-cyan-400">Поддержка</a></li>
-                <li><a href="#" className="hover:text-cyan-400">API</a></li>
+                <li><Link to="/privacy" className="hover:text-cyan-400">Политика конфиденциальности</Link></li>
+                <li><Link to="/terms" className="hover:text-cyan-400">Пользовательское соглашение</Link></li>
+                <li><Link to="/cookies" className="hover:text-cyan-400">Использование cookies</Link></li>
+                <li><a href="mailto:support@activematter.wiki" className="hover:text-cyan-400">Связаться с нами</a></li>
               </ul>
             </div>
           </div>
-          <div className="pt-6 border-t border-gray-800/30 text-center text-xs text-gray-600">
-            <p>© 2025 Active Matter Wiki. Сделано с ❤️ для сообщества</p>
+          <div className="pt-6 border-t border-gray-800/30">
+            <div className="text-xs text-gray-600 space-y-2">
+              <p className="text-center">
+                © 2025 Active Matter Wiki. Все права защищены.
+              </p>
+              <p className="text-center">
+                Сайт использует файлы cookies для улучшения работы сервиса. Продолжая использовать сайт, вы соглашаетесь с{' '}
+                <Link to="/cookies" className="text-cyan-400 hover:text-cyan-300">политикой использования cookies</Link>.
+              </p>
+              <p className="text-center text-gray-700">
+                18+ • Информация на сайте не является публичной офертой • Все торговые марки принадлежат их владельцам
+              </p>
+            </div>
           </div>
         </div>
       </footer>
