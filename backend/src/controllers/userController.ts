@@ -26,23 +26,14 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
       take: Number(limit),
       orderBy: { createdAt: 'desc' },
       include: { role: true },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        avatarUrl: true,
-        bio: true,
-        role: true,
-        isPremium: true,
-        premiumUntil: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
+
+    // Убираем passwordHash из ответа
+    const sanitizedUsers = users.map(({ passwordHash, ...user }) => user);
 
     return res.json({
       success: true,
-      data: users,
+      data: sanitizedUsers,
       pagination: {
         page: Number(page),
         limit: Number(limit),
@@ -51,6 +42,7 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
       },
     });
   } catch (error: any) {
+    console.error('getUsers error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'FETCH_FAILED', message: error.message },
@@ -65,19 +57,15 @@ export const getUser = async (req: AuthRequest, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { id },
-      include: { role: true, guides: { select: { id: true, title: true, slug: true } } },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        avatarUrl: true,
-        bio: true,
+      include: {
         role: true,
-        isPremium: true,
-        premiumUntil: true,
-        createdAt: true,
-        updatedAt: true,
-        guides: true,
+        guides: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+          },
+        },
       },
     });
 
@@ -88,8 +76,12 @@ export const getUser = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    return res.json({ success: true, data: user });
+    // Убираем passwordHash
+    const { passwordHash, ...sanitizedUser } = user;
+
+    return res.json({ success: true, data: sanitizedUser });
   } catch (error: any) {
+    console.error('getUser error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'FETCH_FAILED', message: error.message },
@@ -130,22 +122,14 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
       include: { role: true },
     });
 
+    const { passwordHash, ...sanitizedUser } = user;
+
     return res.json({
       success: true,
-      data: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        avatarUrl: user.avatarUrl,
-        bio: user.bio,
-        role: user.role,
-        isPremium: user.isPremium,
-        premiumUntil: user.premiumUntil,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      data: sanitizedUser,
     });
   } catch (error: any) {
+    console.error('updateProfile error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'UPDATE_FAILED', message: error.message },
@@ -183,8 +167,11 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
       },
     });
 
-    return res.json({ success: true, data: user });
+    const { passwordHash, ...sanitizedUser } = user;
+
+    return res.json({ success: true, data: sanitizedUser });
   } catch (error: any) {
+    console.error('updateUserRole error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'UPDATE_FAILED', message: error.message },
@@ -211,6 +198,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
 
     return res.json({ success: true, message: 'Пользователь удалён' });
   } catch (error: any) {
+    console.error('deleteUser error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'DELETE_FAILED', message: error.message },
@@ -227,6 +215,7 @@ export const getRoles = async (req: AuthRequest, res: Response) => {
 
     return res.json({ success: true, data: roles });
   } catch (error: any) {
+    console.error('getRoles error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'FETCH_FAILED', message: error.message },
@@ -252,14 +241,10 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
       take: 5,
       orderBy: { createdAt: 'desc' },
       include: { role: true },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
     });
+
+    // Убираем passwordHash
+    const sanitizedRecent = recentUsers.map(({ passwordHash, ...user }) => user);
 
     return res.json({
       success: true,
@@ -271,10 +256,11 @@ export const getUserStats = async (req: AuthRequest, res: Response) => {
           displayName: role.displayName,
           count: role._count.users,
         })),
-        recent: recentUsers,
+        recent: sanitizedRecent,
       },
     });
   } catch (error: any) {
+    console.error('getUserStats error:', error);
     return res.status(500).json({
       success: false,
       error: { code: 'FETCH_FAILED', message: error.message },
