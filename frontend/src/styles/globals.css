@@ -1,0 +1,129 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+* {
+  @apply transition-colors duration-200;
+}
+
+body {
+  @apply bg-gray-900 text-gray-100 antialiased;
+  font-feature-settings: 'rlig' 1, 'calt' 1;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-600 rounded hover:bg-gray-500;
+}
+
+/* Focus styles */
+:focus-visible {
+  @apply outline-2 outline-offset-2 outline-blue-500;
+}
+
+/* Link styles */
+a {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+/* Button reset */
+button {
+  @apply outline-none;
+}
+
+/* Form inputs */
+input,
+textarea,
+select {
+  @apply bg-gray-800 border border-gray-700 rounded px-3 py-2 text-gray-100 placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    @apply opacity-0;
+  }
+  to {
+    @apply opacity-100;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    @apply opacity-0 translate-y-2;
+  }
+  to {
+    @apply opacity-100 translate-y-0;
+  }
+}
+
+.animate-fade-in {
+  @apply animate-in fade-in duration-300;
+}
+
+.animate-slide-in {
+  @apply animate-in slide-in-from-bottom-2 duration-300;
+}
+
+/* Card styles */
+.card {
+  @apply bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-all;
+}
+
+.card:hover {
+  @apply shadow-lg shadow-gray-900/50;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-700 text-gray-100;
+}
+
+.badge-primary {
+  @apply bg-blue-500/20 text-blue-300;
+}
+
+.badge-success {
+  @apply bg-green-500/20 text-green-300;
+}
+
+.badge-warning {
+  @apply bg-yellow-500/20 text-yellow-300;
+}
+
+.badge-danger {
+  @apply bg-red-500/20 text-red-300;
+}
+
+/* Container utility */
+.container-max {
+  @apply max-w-7xl mx-auto;
+}
+
+/* Section padding */
+.section-padding {
+  @apply py-16 px-4;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent;
+}
+
+/* Dark overlay */
+.dark-overlay {
+  @apply fixed inset-0 bg-black/50 backdrop-blur-sm;
+}
