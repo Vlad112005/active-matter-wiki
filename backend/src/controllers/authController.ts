@@ -47,7 +47,7 @@ export const register = async (req: Request, res: Response) => {
       data: {
         email,
         username,
-        passwordHash: hashedPassword,
+        password: hashedPassword,
         roleId: userRole.id,
       },
       include: {
@@ -65,12 +65,11 @@ export const register = async (req: Request, res: Response) => {
           id: user.id,
           email: user.email,
           username: user.username,
-          avatarUrl: user.avatarUrl,
+          avatar: user.avatar,
           role: user.role,
           isPremium: user.isPremium,
           premiumUntil: user.premiumUntil,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
         },
       },
     });
@@ -103,14 +102,14 @@ export const login = async (req: Request, res: Response) => {
       },
     });
 
-    if (!user || !user.passwordHash) {
+    if (!user || !user.password) {
       return res.status(401).json({
         success: false,
         error: { code: 'INVALID_CREDENTIALS', message: 'Неверный логин или пароль' },
       });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -129,12 +128,11 @@ export const login = async (req: Request, res: Response) => {
           id: user.id,
           email: user.email,
           username: user.username,
-          avatarUrl: user.avatarUrl,
+          avatar: user.avatar,
           role: user.role,
           isPremium: user.isPremium,
           premiumUntil: user.premiumUntil,
           createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
         },
       },
     });
@@ -171,12 +169,11 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         id: user.id,
         email: user.email,
         username: user.username,
-        avatarUrl: user.avatarUrl,
+        avatar: user.avatar,
         role: user.role,
         isPremium: user.isPremium,
         premiumUntil: user.premiumUntil,
         createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
       },
     });
   } catch (error: any) {
