@@ -1,0 +1,58 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { AuthState, LoginResponse } from '../types';
+import { apiClient } from '../services/api';
+
+interface AuthStore extends AuthState {
+  login: (username: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  setToken: (token: string | null) => void;
+  setUser: (user: LoginResponse['user'] | null) => void;
+}
+
+export const useAuthStore = create<AuthStore>(
+  persist(
+    (set) => ({
+      user: null,
+      token: null,
+      isAuthenticated: false,
+
+      setToken: (token) => {
+        set({ token });
+        apiClient.setToken(token);
+      },
+
+      setUser: (user) => {
+        set({ user, isAuthenticated: !!user });
+      },
+
+      login: async (username: string, password: string) => {
+        const response = await apiClient.login({ username, password });
+        set({
+          user: response.user,
+          token: response.token,
+          isAuthenticated: true,
+        });
+        apiClient.setToken(response.token);
+      },
+
+      logout: async () => {
+        await apiClient.logout();
+        set({
+          user: null,
+          token: null,
+          isAuthenticated: false,
+        });
+        apiClient.setToken(null);
+      },
+    }),
+    {
+      name: 'auth-store',
+      partialize: (state) => ({
+        user: state.user,
+        token: state.token,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+);
