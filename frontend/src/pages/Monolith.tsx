@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../services/api';
-import { Unlock, Coins, CreditCard, Package, Wrench, Zap } from 'lucide-react';
+import { Unlock, Coins, CreditCard, Package, Wrench, Zap, Diamond } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface MonolithUnlock {
@@ -51,20 +51,6 @@ const Monolith = () => {
 
   const currentLevel = levels.find(l => l.code === selectedLevel);
 
-  const getUnlockIcon = (type: string) => {
-    switch (type) {
-      case 'item':
-        return <Package size={16} />;
-      case 'upgrade':
-        return <Wrench size={16} />;
-      case 'recipe':
-      case 'chrono':
-        return <Zap size={16} />;
-      default:
-        return <Package size={16} />;
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,22 +83,29 @@ const Monolith = () => {
                 <h3 className="font-semibold">Уровни допуска</h3>
               </div>
               <div className="space-y-1 p-2">
-                {levels.map((level) => (
-                  <button
-                    key={level.code}
-                    onClick={() => setSelectedLevel(level.code)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
-                      selectedLevel === level.code
-                        ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{level.name}</span>
-                      <Unlock size={14} className="text-green-400" />
-                    </div>
-                  </button>
-                ))}
+                {levels.map((level) => {
+                  const isLocked = level.requiredTokens && level.requiredTokens > 0;
+                  return (
+                    <button
+                      key={level.code}
+                      onClick={() => setSelectedLevel(level.code)}
+                      className={`w-full text-left px-4 py-3 rounded-lg transition-all ${
+                        selectedLevel === level.code
+                          ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{level.code}</span>
+                        {isLocked ? (
+                          <span className="text-xs text-amber-400">{level.requiredTokens} жетонов</span>
+                        ) : (
+                          <Unlock size={14} className="text-green-400" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -126,13 +119,13 @@ const Monolith = () => {
                   <h2 className="text-2xl font-bold mb-4">{currentLevel.name}</h2>
                   
                   {/* Требования */}
-                  {(currentLevel.requiredTokens || currentLevel.requiredCredits) ? (
+                  {(currentLevel.requiredTokens && currentLevel.requiredTokens > 0) || (currentLevel.requiredCredits && currentLevel.requiredCredits > 0) ? (
                     <div className="flex items-center gap-4 mb-4">
                       {currentLevel.requiredTokens > 0 && (
                         <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                           <Coins size={18} className="text-amber-400" />
-                          <span className="font-semibold text-amber-400">{currentLevel.requiredTokens}₽</span>
-                          <span className="text-xs text-gray-400">жетонов</span>
+                          <span className="font-semibold text-amber-400">{currentLevel.requiredTokens}</span>
+                          <span className="text-xs text-gray-400">жетонов монолита</span>
                         </div>
                       )}
                       {currentLevel.requiredCredits > 0 && (
@@ -170,9 +163,20 @@ const Monolith = () => {
                                     )}
                                   </div>
                                 </div>
-                                {unlock.item?.price > 0 && (
-                                  <span className="text-amber-400 font-semibold text-sm">₽{unlock.item.price}</span>
-                                )}
+                                <div className="flex flex-col items-end gap-1">
+                                  {unlock.item?.price > 0 && (
+                                    <span className="text-blue-400 font-semibold text-sm flex items-center gap-1">
+                                      <CreditCard size={14} />
+                                      {unlock.item.price}
+                                    </span>
+                                  )}
+                                  {unlock.item?.crystalPrice > 0 && (
+                                    <span className="text-purple-400 font-semibold text-sm flex items-center gap-1">
+                                      <Diamond size={14} />
+                                      {unlock.item.crystalPrice}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -193,7 +197,10 @@ const Monolith = () => {
                                   <span className="text-gray-300">{unlock.upgradeName}</span>
                                 </div>
                                 {unlock.upgradeCost && (
-                                  <span className="text-amber-400 font-semibold">₽{unlock.upgradeCost}</span>
+                                  <span className="text-blue-400 font-semibold flex items-center gap-1">
+                                    <CreditCard size={14} />
+                                    {unlock.upgradeCost}
+                                  </span>
                                 )}
                               </div>
                             </div>
