@@ -9,8 +9,8 @@ datasource db {
 
 model Role {
   id          String   @id @default(cuid())
-  name        String   @unique // user, premium, moderator, admin, founder
-  displayName String   // Отображаемое имя на русском
+  name        String   @unique
+  displayName String
   description String?
   users       User[]
 }
@@ -27,57 +27,71 @@ model User {
   role           Role     @relation(fields: [roleId], references: [id])
   isPremium      Boolean  @default(false)
   premiumUntil   DateTime?
-
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
-
   guides         Guide[]  @relation("GuideAuthor")
   auditLogs      AuditLog[]
 }
 
 model Item {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String   @db.Text
-  image       String?
-  type        String
-  rarity      String
-  price       Int
-  weight      Float
-  stackable   Boolean  @default(false)
-  maxStack    Int      @default(1)
-  source      String[]
-  tags        String[]
-
-  locations        Location[]
-  lootSpawns       LocationLoot[]
-  craftIngredients CraftIngredient[]
-  craftResults     CraftRecipe[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  description         String   @db.Text
+  image               String?
+  type                String   // weapon, armor, consumable, resource, quest
+  rarity              String   // common, uncommon, rare, epic, legendary
+  
+  // Цены
+  price               Int      @default(0) // Базовая цена (жетоны)
+  silverPrice         Int?     // Цена за серебро
+  replicationPoints   Int?     // Очки для репликации
+  
+  // Монолит
+  monolithLevel       Int?     // Уровень монолита для разблокировки
+  
+  // Характеристики
+  weight              Float    @default(0)
+  stackable           Boolean  @default(false)
+  maxStack            Int      @default(1)
+  
+  // Дополнительная информация
+  source              String[] // Где найти
+  tags                String[]
+  isQuestItem         Boolean  @default(false)
+  
+  // Статистики (для оружия/брони)
+  damage              Int?
+  armor               Int?
+  durability          Int?
+  
+  locations           Location[]
+  lootSpawns          LocationLoot[]
+  craftIngredients    CraftIngredient[]
+  craftResults        CraftRecipe[]
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
   @@index([type])
   @@index([rarity])
   @@index([name])
+  @@index([monolithLevel])
 }
 
 model Location {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  description String   @db.Text
-  difficulty  String
-  mapImage    String?
-  tips        String[]
-
-  enemies      LocationEnemy[]
-  lootTable    LocationLoot[]
-  characters   Character[]
+  id              String   @id @default(cuid())
+  name            String   @unique
+  description     String   @db.Text
+  difficulty      String
+  mapImage        String?
+  tips            String[]
+  enemies         LocationEnemy[]
+  lootTable       LocationLoot[]
+  characters      Character[]
   recommendedGear Item[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
   @@index([difficulty])
   @@index([name])
 }
@@ -89,19 +103,19 @@ model LocationEnemy {
   name       String
   count      Int      @default(1)
   level      Int?
-
+  
   @@index([locationId])
 }
 
 model LocationLoot {
-  id         String   @id @default(cuid())
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-  itemId     String
-  item       Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  spawnChance Float   @default(0.5)
-  quantity   Int      @default(1)
-
+  id          String   @id @default(cuid())
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  spawnChance Float    @default(0.5)
+  quantity    Int      @default(1)
+  
   @@index([locationId])
   @@index([itemId])
 }
@@ -111,44 +125,41 @@ model CraftRecipe {
   resultId    String
   result      Item              @relation(fields: [resultId], references: [id], onDelete: Cascade)
   ingredients CraftIngredient[]
-
+  
   @@index([resultId])
 }
 
 model CraftIngredient {
-  id       String       @id @default(cuid())
+  id       String      @id @default(cuid())
   recipeId String
-  recipe   CraftRecipe  @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe   CraftRecipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   itemId   String
-  item     Item         @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  quantity Int          @default(1)
-
+  item     Item        @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity Int         @default(1)
+  
   @@index([recipeId])
   @@index([itemId])
 }
 
 model Guide {
-  id        String   @id @default(cuid())
-  slug      String   @unique
-  title     String
-  content   String   @db.Text
-  category  String
-  tags      String[]
+  id         String         @id @default(cuid())
+  slug       String         @unique
+  title      String
+  content    String         @db.Text
+  category   String
+  tags       String[]
   coverImage String?
-
-  rating    Float    @default(0)
-  views     Int      @default(0)
-  likes     Int      @default(0)
-
-  authorId  String
-  author    User     @relation("GuideAuthor", fields: [authorId], references: [id], onDelete: Cascade)
-  versions  GuideVersion[]
-
-  published Boolean  @default(true)
-  featured  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  rating     Float          @default(0)
+  views      Int            @default(0)
+  likes      Int            @default(0)
+  authorId   String
+  author     User           @relation("GuideAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  versions   GuideVersion[]
+  published  Boolean        @default(true)
+  featured   Boolean        @default(false)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  
   @@index([slug])
   @@index([category])
   @@index([published])
@@ -161,79 +172,74 @@ model GuideVersion {
   version   Int
   content   String   @db.Text
   createdAt DateTime @default(now())
-
+  
   @@index([guideId])
 }
 
 model Patch {
-  id          String   @id @default(cuid())
-  version     String   @unique
+  id          String        @id @default(cuid())
+  version     String        @unique
   title       String
   releaseDate DateTime
-  content     String   @db.Text
+  content     String        @db.Text
   changes     PatchChange[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
   @@index([releaseDate])
 }
 
 model PatchChange {
-  id      String @id @default(cuid())
-  patchId String
-  patch   Patch  @relation(fields: [patchId], references: [id], onDelete: Cascade)
-  type    String
+  id          String @id @default(cuid())
+  patchId     String
+  patch       Patch  @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  type        String // added, changed, fixed, removed
   description String
-
+  
   @@index([patchId])
 }
 
 model Character {
-  id         String   @id @default(cuid())
-  name       String
-  role       String
-  description String  @db.Text
-  image      String?
-
-  locationId String?
-  location   Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-
+  id          String    @id @default(cuid())
+  name        String
+  role        String
+  description String    @db.Text
+  image       String?
+  locationId  String?
+  location    Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
   sells       String[]
   buys        String[]
   questsGiven Quest[]
-
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
   @@index([name])
   @@index([locationId])
 }
 
 model Quest {
-  id          String   @id @default(cuid())
-  title       String
-  description String  @db.Text
-  difficulty  String
-  giverId     String
-  giver       Character @relation(fields: [giverId], references: [id], onDelete: Cascade)
-  reward      String
+  id           String    @id @default(cuid())
+  title        String
+  description  String    @db.Text
+  difficulty   String
+  giverId      String
+  giver        Character @relation(fields: [giverId], references: [id], onDelete: Cascade)
+  reward       String
   requirements String[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
   @@index([giverId])
 }
 
 model SiteSettings {
-  id               String   @id @default(cuid())
-  key              String   @unique
-  value            String   @db.Text
-  description      String?
-  updatedAt        DateTime @updatedAt
-  updatedBy        String?
-
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  
   @@index([key])
 }
 
@@ -246,7 +252,7 @@ model AuditLog {
   entityId  String
   changes   Json?
   createdAt DateTime @default(now())
-
+  
   @@index([userId])
   @@index([createdAt])
 }
@@ -257,7 +263,7 @@ model PageView {
   referrer  String?
   userAgent String?
   createdAt DateTime @default(now())
-
+  
   @@index([path])
   @@index([createdAt])
 }
