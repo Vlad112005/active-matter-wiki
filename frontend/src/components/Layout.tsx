@@ -3,11 +3,14 @@ import { Menu, X, LogOut, User, Crown, Shield, AlertCircle } from 'lucide-react'
 import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Layout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
   const { settings } = useSettings();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -19,11 +22,11 @@ const Layout = () => {
   const isAdmin = user?.role?.name && ['admin', 'founder'].includes(user.role.name);
 
   const navLinks = [
-    { label: 'Главная', path: '/' },
-    { label: 'Предметы', path: '/items' },
-    { label: 'Локации', path: '/locations' },
-    { label: 'Гайды', path: '/guides' },
-    { label: 'Патчи', path: '/patches' },
+    { label: t('nav.home'), path: '/' },
+    { label: t('nav.items'), path: '/items' },
+    { label: t('nav.locations'), path: '/locations' },
+    { label: t('nav.guides'), path: '/guides' },
+    { label: t('nav.patches'), path: '/patches' },
   ];
 
   const gameStatusBadge = () => {
@@ -77,6 +80,8 @@ const Layout = () => {
 
             {/* Auth & Actions */}
             <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              
               {isAuthenticated ? (
                 <div className="hidden md:flex items-center gap-2">
                   {user?.isPremium && (
@@ -88,7 +93,7 @@ const Layout = () => {
                   <Link
                     to={`/profile/${user?.id}`}
                     className="btn-ghost flex items-center gap-1.5"
-                    title="Мой профиль"
+                    title={t('nav.profile')}
                   >
                     <User size={16} />
                     {user?.username}
@@ -96,16 +101,16 @@ const Layout = () => {
                   {hasAdminAccess && (
                     <Link to="/admin" className="btn-secondary text-sm flex items-center gap-1.5">
                       <Shield size={16} />
-                      Админка
+                      {t('nav.admin')}
                     </Link>
                   )}
-                  <button onClick={handleLogout} className="btn-ghost p-2" title="Выйти">
+                  <button onClick={handleLogout} className="btn-ghost p-2" title={t('nav.logout')}>
                     <LogOut size={18} />
                   </button>
                 </div>
               ) : (
                 <Link to="/login" className="hidden md:block btn-primary text-sm">
-                  Вход
+                  {t('nav.login')}
                 </Link>
               )}
 
@@ -141,7 +146,7 @@ const Layout = () => {
                     className="block px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Мой профиль
+                    {t('nav.profile')}
                   </Link>
                   {hasAdminAccess && (
                     <Link
@@ -149,7 +154,7 @@ const Layout = () => {
                       className="block px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      Админ панель
+                      {t('nav.admin')}
                     </Link>
                   )}
                   <button
@@ -159,7 +164,7 @@ const Layout = () => {
                     }}
                     className="w-full text-left px-4 py-2 rounded-lg hover:bg-white/5 text-sm text-gray-400 hover:text-white"
                   >
-                    Выход
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
@@ -168,7 +173,7 @@ const Layout = () => {
                   className="block px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 text-center text-sm font-medium text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Вход
+                  {t('nav.login')}
                 </Link>
               )}
             </div>
@@ -249,13 +254,7 @@ const Layout = () => {
           </div>
           <div className="pt-6 border-t border-gray-800/30">
             <div className="text-xs text-gray-600 space-y-2">
-              <p className="text-center">
-                © 2025 Active Matter Wiki. Все права защищены.
-              </p>
-              <p className="text-center">
-                Сайт использует файлы cookies для улучшения работы сервиса. Продолжая использовать сайт, вы соглашаетесь с{' '}
-                <Link to="/cookies" className="text-cyan-400 hover:text-cyan-300">политикой использования cookies</Link>.
-              </p>
+              <p className="text-center">© 2025 Active Matter Wiki. Все права защищены.</p>
               <p className="text-center text-gray-700">
                 18+ • Информация на сайте не является публичной офертой • Все торговые марки принадлежат их владельцам
               </p>
