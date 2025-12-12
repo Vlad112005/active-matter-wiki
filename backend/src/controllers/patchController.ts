@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../database/client.js';
 import { AuthRequest } from '../middleware/auth.js';
-import toast from 'react-hot-toast';
 
-// ===== НОВОСти / ПАТЧИ =====
+// ===== НОВОСТИ / ПАТЧИ =====
 
 // Получить все патчи (с пагинацией)
 export const getPatches = async (req: Request, res: Response) => {
