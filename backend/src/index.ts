@@ -12,6 +12,7 @@ import userRoutes from './routes/users.js';
 import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
 import monolithRoutes from './routes/monolith.js';
+import monolithAdminRoutes from './routes/monolithAdmin.js';
 import discordRoutes from './routes/discord.js';
 import analyticsRoutes from './routes/analytics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -57,6 +58,7 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/stats', statsRoutes);
 app.use('/api/v1/monolith', monolithRoutes);
+app.use('/api/v1/monolith-admin', monolithAdminRoutes);
 app.use('/api/v1/discord', discordRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
 
