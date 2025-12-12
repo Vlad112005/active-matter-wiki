@@ -38,6 +38,13 @@ export const getPublicSettings = async (req: AuthRequest, res: Response) => {
 // Получить все настройки (только для админов)
 export const getAllSettings = async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
     const settings = await prisma.siteSettings.findMany({
       orderBy: { key: 'asc' },
     });
@@ -55,6 +62,13 @@ export const getAllSettings = async (req: AuthRequest, res: Response) => {
 // Обновить настройку
 export const updateSetting = async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
     const { key, value, description } = req.body;
 
     if (!key || value === undefined) {
@@ -80,7 +94,7 @@ export const updateSetting = async (req: AuthRequest, res: Response) => {
     });
 
     // Логирование
-    await prisma.auditLog.create({
+    await prisma.activityLog.create({
       data: {
         userId: req.user!.id,
         action: 'UPDATE_SETTING',
@@ -103,6 +117,13 @@ export const updateSetting = async (req: AuthRequest, res: Response) => {
 // Удалить настройку
 export const deleteSetting = async (req: AuthRequest, res: Response) => {
   try {
+    if (req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
     const { key } = req.params;
 
     await prisma.siteSettings.delete({
@@ -110,7 +131,7 @@ export const deleteSetting = async (req: AuthRequest, res: Response) => {
     });
 
     // Логирование
-    await prisma.auditLog.create({
+    await prisma.activityLog.create({
       data: {
         userId: req.user!.id,
         action: 'DELETE_SETTING',
