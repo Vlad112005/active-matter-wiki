@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getMonolithLevels, getMonolithLevel } from '../controllers/monolith';
+import { getAllLevels, getLevelByCode } from '../controllers/monolith';
 
 const router = Router();
 
-router.get('/', getMonolithLevels);
-router.get('/:code', getMonolithLevel);
+router.get('/', getAllLevels);
+router.get('/:code', getLevelByCode);
 
 export default router;

@@ -8,9 +8,9 @@ const router = Router();
 router.get('/', getPatches);
 router.get('/:id', getPatch);
 
-// Protected
-router.post('/', authenticate, requireRole(['admin', 'founder']), createPatch);
-router.put('/:id', authenticate, requireRole(['admin', 'founder']), updatePatch);
-router.delete('/:id', authenticate, requireRole(['founder']), deletePatch);
+// Protected (использовать только если есть в контроллере)
+// router.post('/', authenticate, requireRole(['admin', 'founder']), createPatch);
+// router.put('/:id', authenticate, requireRole(['admin', 'founder']), updatePatch);
+// router.delete('/:id', authenticate, requireRole(['founder']), deletePatch);
 
 export default router;
