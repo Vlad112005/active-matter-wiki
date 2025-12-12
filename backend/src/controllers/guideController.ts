@@ -2,95 +2,200 @@ import { Request, Response } from 'express';
 import { prisma } from '../database/client.js';
 import { AuthRequest } from '../middleware/auth.js';
 
-export const getGuides = async (req: Request, res: Response) => {
+// ===== ГАЙДЫ =====
+
+// Получить все нарубликованные гайды
+export const getPublishedGuides = async (req: Request, res: Response) => {
   try {
-    const { page = 1, limit = 20, category, published = 'true' } = req.query;
+    const { page = 1, limit = 10, sort = 'desc', tag } = req.query;
+    const pageNum = Math.max(1, parseInt(String(page)));
+    const limitNum = Math.min(100, Math.max(1, parseInt(String(limit))));
+    const skip = (pageNum - 1) * limitNum;
 
-    const where: any = { published: published === 'true' };
-    if (category) where.category = category;
+    const where: any = { published: true };
+    if (tag) {
+      where.tags = { has: String(tag) };
+    }
 
-    const total = await prisma.guide.count({ where });
-    const guides = await prisma.guide.findMany({
-      where,
-      skip: (Number(page) - 1) * Number(limit),
-      take: Number(limit),
-      orderBy: { createdAt: 'desc' },
-      include: { author: { select: { id: true, username: true } } },
-    });
+    const [guides, total] = await Promise.all([
+      prisma.guide.findMany({
+        where,
+        include: { author: true },
+        orderBy: { createdAt: sort === 'asc' ? 'asc' : 'desc' },
+        skip,
+        take: limitNum,
+      }),
+      prisma.guide.count({ where }),
+    ]);
 
     return res.json({
       success: true,
       data: guides,
       pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit)),
+        current: pageNum,
+        total: Math.ceil(total / limitNum),
+        perPage: limitNum,
+        total: total,
       },
     });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: { code: 'FETCH_FAILED', message: error.message } });
+    console.error('getPublishedGuides error:', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'FETCH_FAILED', message: error.message },
+    });
   }
 };
 
-export const getGuide = async (req: Request, res: Response) => {
+// Получить гайд по slug
+export const getGuideBySlug = async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
+
     const guide = await prisma.guide.findUnique({
       where: { slug },
-      include: { author: { select: { id: true, username: true } } },
+      include: {
+        author: true,
+        comments: {
+          include: { author: true },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!guide) {
-      return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Guide not found' } });
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Гайд не найден' },
+      });
     }
 
-    await prisma.guide.update({
-      where: { slug },
-      data: { views: { increment: 1 } },
-    });
+    // Повысим счётчик просмотров
+    if (guide.published) {
+      await prisma.guide.update({
+        where: { id: guide.id },
+        data: { views: { increment: 1 } },
+      });
+    }
 
     return res.json({ success: true, data: guide });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: { code: 'FETCH_FAILED', message: error.message } });
+    console.error('getGuideBySlug error:', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'FETCH_FAILED', message: error.message },
+    });
   }
 };
 
+// Создать гайд (admin/moderator)
 export const createGuide = async (req: AuthRequest, res: Response) => {
   try {
+    const { title, titleEn, slug, content, contentEn, tags, published } = req.body;
+
+    if (req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
     const guide = await prisma.guide.create({
       data: {
-        ...req.body,
+        title,
+        titleEn,
+        slug,
+        content,
+        contentEn,
+        tags,
+        published,
         authorId: req.user!.id,
       },
-      include: { author: { select: { id: true, username: true } } },
+      include: { author: true },
     });
+
     return res.status(201).json({ success: true, data: guide });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: { code: 'CREATE_FAILED', message: error.message } });
+    console.error('createGuide error:', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'CREATE_FAILED', message: error.message },
+    });
   }
 };
 
+// Обновить гайд
 export const updateGuide = async (req: AuthRequest, res: Response) => {
   try {
-    const { slug } = req.params;
-    const guide = await prisma.guide.update({
-      where: { slug },
-      data: req.body,
-      include: { author: { select: { id: true, username: true } } },
+    const { id } = req.params;
+    const { title, titleEn, content, contentEn, tags, published } = req.body;
+
+    const guide = await prisma.guide.findUnique({ where: { id } });
+    if (!guide) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Гайд не найден' },
+      });
+    }
+
+    if (guide.authorId !== req.user?.id && req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
+    const updated = await prisma.guide.update({
+      where: { id },
+      data: {
+        ...(title && { title }),
+        ...(titleEn && { titleEn }),
+        ...(content && { content }),
+        ...(contentEn && { contentEn }),
+        ...(tags && { tags }),
+        ...(published !== undefined && { published }),
+      },
+      include: { author: true },
     });
-    return res.json({ success: true, data: guide });
+
+    return res.json({ success: true, data: updated });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: { code: 'UPDATE_FAILED', message: error.message } });
+    console.error('updateGuide error:', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'UPDATE_FAILED', message: error.message },
+    });
   }
 };
 
+// Удалить гайд
 export const deleteGuide = async (req: AuthRequest, res: Response) => {
   try {
-    const { slug } = req.params;
-    await prisma.guide.delete({ where: { slug } });
-    return res.json({ success: true, message: 'Guide deleted' });
+    const { id } = req.params;
+
+    const guide = await prisma.guide.findUnique({ where: { id } });
+    if (!guide) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Гайд не найден' },
+      });
+    }
+
+    if (guide.authorId !== req.user?.id && req.user?.role?.name !== 'admin' && req.user?.role?.name !== 'founder') {
+      return res.status(403).json({
+        success: false,
+        error: { code: 'FORBIDDEN', message: 'Нет доступа' },
+      });
+    }
+
+    await prisma.guide.delete({ where: { id } });
+
+    return res.json({ success: true, message: 'Гайд удалён' });
   } catch (error: any) {
-    return res.status(500).json({ success: false, error: { code: 'DELETE_FAILED', message: error.message } });
+    console.error('deleteGuide error:', error);
+    return res.status(500).json({
+      success: false,
+      error: { code: 'DELETE_FAILED', message: error.message },
+    });
   }
 };
