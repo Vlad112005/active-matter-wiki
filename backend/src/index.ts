@@ -13,6 +13,7 @@ import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
 import monolithRoutes from './routes/monolith.js';
 import discordRoutes from './routes/discord.js';
+import analyticsRoutes from './routes/analytics.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -57,18 +58,23 @@ app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/stats', statsRoutes);
 app.use('/api/v1/monolith', monolithRoutes);
 app.use('/api/v1/discord', discordRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
 
 const server = app.listen(port, () => {
-  console.log(`\n🚀 Server running on http://localhost:${port}`);
+  console.log(`
+🚀 Server running on http://localhost:${port}`);
   console.log(`📚 API Docs: http://localhost:${port}/api/docs`);
-  console.log(`🌐 CORS enabled for: ${clientUrl}\n`);
+  console.log(`🌐 CORS enabled for: ${clientUrl}
+`);
 });
 
 process.on('SIGINT', async () => {
-  console.log('\n\n📌 Shutting down gracefully...');
+  console.log('
+
+📋 Shutting down gracefully...');
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
