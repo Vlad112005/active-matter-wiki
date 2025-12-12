@@ -7,34 +7,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// === ПОЛЬЗОВАТЕЛИ ===
+// === ПОЛЬЗОВАТЕЛИ И РОЛИ ===
 model User {
-  id            String    @id @default(cuid())
-  username      String    @unique
-  email         String    @unique
-  password      String    // Зашифрована bcrypt в коде
+  id            String         @id @default(cuid())
+  username      String         @unique
+  email         String         @unique
+  password      String         // Зашифрован bcrypt
   avatar        String?
   bio           String?
-  discordId     String?   @unique
-  isPremium     Boolean   @default(false)
+  discordId     String?        @unique
+  isPremium     Boolean        @default(false)
   premiumUntil  DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  emailVerified Boolean        @default(false)
+  isActive      Boolean        @default(true)
+  lastLoginAt   DateTime?
+  loginCount    Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
   roleId        String?
-  role          Role?     @relation(fields: [roleId], references: [id])
+  role          Role?          @relation(fields: [roleId], references: [id])
+  
   guides        Guide[]
   comments      Comment[]
+  favorites     Favorite[]
+  sessions      UserSession[]
+  activityLogs  ActivityLog[]
   
   @@index([email])
+  @@index([username])
   @@index([roleId])
+  @@index([isActive])
+  @@map("users")
 }
 
 model Role {
-  id          String  @id @default(cuid())
-  name        String  @unique
+  id          String   @id @default(cuid())
+  name        String   @unique  // 'founder', 'admin', 'moderator', 'content_manager', 'user'
   displayName String
   description String?
+  permissions Json     @default("{}")
+  priority    Int      @default(0)  // Чем выше, тем больше прав
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
   users       User[]
+  
+  @@index([name])
+  @@index([priority])
+  @@map("roles")
 }
 
 // === ПРЕДМЕТЫ ===
@@ -42,8 +63,8 @@ model Item {
   id                 String            @id @default(cuid())
   name               String            @unique
   nameEn             String?
-  description        String
-  descriptionEn      String?
+  description        String            @db.Text
+  descriptionEn      String?           @db.Text
   image              String?
   type               String
   rarity             String
@@ -61,13 +82,21 @@ model Item {
   damage             Int               @default(0)
   armor              Int               @default(0)
   durability         Int               @default(0)
+  viewCount          Int               @default(0)
+  isPublished        Boolean           @default(true)
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
+  
   monolithUnlocks    MonolithUnlock[]
+  favorites          Favorite[]
   
   @@index([type])
   @@index([rarity])
   @@index([monolithLevel])
+  @@index([isPublished])
+  @@index([name])
+  @@fulltext([name, description])
+  @@map("items")
 }
 
 // === МОНОЛИТ ===
@@ -79,9 +108,17 @@ model MonolithLevel {
   nameEn             String?
   requiredTokens     Int?
   requiredCrystals   Int?
-  unlocks            MonolithUnlock[]
+  description        String?          @db.Text
+  descriptionEn      String?          @db.Text
+  isPublished        Boolean          @default(true)
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
+  
+  unlocks            MonolithUnlock[]
+  
+  @@index([order])
+  @@index([code])
+  @@map("monolith_levels")
 }
 
 model MonolithUnlock {
@@ -104,20 +141,32 @@ model MonolithUnlock {
   
   @@index([monolithLevelId])
   @@index([itemId])
+  @@index([type])
+  @@map("monolith_unlocks")
 }
 
 // === ЛОКАЦИИ ===
 model Location {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String     @id @default(cuid())
+  name        String     @unique
   nameEn      String?
-  description String
+  description String     @db.Text
   image       String?
   dangerLevel String
   lootTable   String[]
   tips        String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  viewCount   Int        @default(0)
+  isPublished Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  favorites   Favorite[]
+  
+  @@index([name])
+  @@index([dangerLevel])
+  @@index([isPublished])
+  @@fulltext([name, description])
+  @@map("locations")
 }
 
 // === ГАЙДЫ ===
@@ -126,8 +175,10 @@ model Guide {
   title       String
   titleEn     String?
   slug        String    @unique
-  content     String
-  contentEn   String?
+  content     String    @db.Text
+  contentEn   String?   @db.Text
+  coverImage  String?
+  category    String?
   tags        String[]
   authorId    String
   author      User      @relation(fields: [authorId], references: [id])
@@ -136,26 +187,77 @@ model Guide {
   rating      Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  
   comments    Comment[]
+  favorites   Favorite[]
+  versions    GuideVersion[]
   
   @@index([authorId])
   @@index([published])
   @@index([slug])
+  @@index([category])
+  @@fulltext([title, content])
+  @@map("guides")
+}
+
+model GuideVersion {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  version   Int
+  title     String
+  content   String   @db.Text
+  changedBy String
+  changes   String?  @db.Text
+  createdAt DateTime @default(now())
+  
+  @@index([guideId])
+  @@index([version])
+  @@map("guide_versions")
 }
 
 model Comment {
   id        String   @id @default(cuid())
-  content   String
+  content   String   @db.Text
   guideId   String
   guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
   authorId  String
   author    User     @relation(fields: [authorId], references: [id])
   rating    Int      @default(0)
+  isEdited  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   @@index([guideId])
   @@index([authorId])
+  @@map("comments")
+}
+
+// === ИЗБРАННОЕ ===
+model Favorite {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  itemId     String?
+  item       Item?     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  
+  guideId    String?
+  guide      Guide?    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  
+  locationId String?
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  type       String    // 'item', 'guide', 'location'
+  createdAt  DateTime  @default(now())
+  
+  @@unique([userId, itemId])
+  @@unique([userId, guideId])
+  @@unique([userId, locationId])
+  @@index([userId])
+  @@index([type])
+  @@map("favorites")
 }
 
 // === ПАТЧИ ===
@@ -164,68 +266,125 @@ model Patch {
   version     String   @unique
   title       String
   titleEn     String?
-  content     String
-  contentEn   String?
-  publishedAt DateTime @default(now())
+  content     String   @db.Text
+  contentEn   String?  @db.Text
+  type        String[] // ['new', 'changed', 'fixed', 'removed']
+  published   Boolean  @default(false)
+  publishedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
   @@index([publishedAt])
+  @@index([published])
+  @@index([version])
+  @@map("patches")
 }
 
-// === НАСТРОЙКИ ===
+// === НАСТРОЙКИ САЙТА ===
 model SiteSettings {
   id          String   @id @default(cuid())
   key         String   @unique
-  value       String
-  description String?
+  value       String   @db.Text
+  category    String   // 'general', 'seo', 'analytics', 'legal', 'social'
+  description String?  @db.Text
+  accessLevel String   @default("admin") // 'founder', 'admin', 'moderator'
   updatedAt   DateTime @updatedAt
   updatedBy   String?
   
   @@index([key])
+  @@index([category])
+  @@index([accessLevel])
+  @@map("site_settings")
 }
 
-// === СЕССИИ (для восстановления пароля и 2FA) ===
+// === ЮРИДИЧЕСКИЕ ДОКУМЕНТЫ ===
+model LegalDocument {
+  id          String   @id @default(cuid())
+  type        String   @unique // 'terms', 'privacy', 'cookies', 'gdpr'
+  title       String
+  titleEn     String?
+  content     String   @db.Text
+  contentEn   String?  @db.Text
+  version     String
+  published   Boolean  @default(false)
+  effectiveAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+  
+  @@index([type])
+  @@index([published])
+  @@index([effectiveAt])
+  @@map("legal_documents")
+}
+
+// === СОГЛАСИЯ НА ОБРАБОТКУ ДАННЫХ ===
+model UserConsent {
+  id           String   @id @default(cuid())
+  userId       String
+  consentType  String   // 'privacy', 'terms', 'cookies', 'marketing'
+  version      String
+  accepted     Boolean  @default(true)
+  ipAddress    String?
+  userAgent    String?
+  acceptedAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([consentType])
+  @@map("user_consents")
+}
+
+// === СЕССИИ ===
 model Session {
   id        String   @id @default(cuid())
   userId    String
   token     String   @unique
   type      String   // 'password_reset', '2fa', 'email_verification'
   expiresAt DateTime
+  used      Boolean  @default(false)
   createdAt DateTime @default(now())
   
   @@index([userId])
   @@index([token])
+  @@index([expiresAt])
+  @@map("sessions")
 }
 
-// === ЛОГИРОВАНИЕ АКТИВНОСТИ (для аудита) ===
+// === ЛОГИРОВАНИЕ АКТИВНОСТИ ===
 model ActivityLog {
   id        String   @id @default(cuid())
   userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   action    String   // 'LOGIN', 'CREATE_ITEM', 'UPDATE_ITEM', 'DELETE_ITEM', etc
   entity    String   // 'User', 'Item', 'Guide', etc
   entityId  String?
   ipAddress String?
-  userAgent String?
+  userAgent String?  @db.Text
   changes   Json?
+  metadata  Json?
   createdAt DateTime @default(now())
   
   @@index([userId])
   @@index([action])
+  @@index([entity])
   @@index([createdAt])
+  @@map("activity_logs")
 }
 
-// === СЕССИИ ПОЛЬЗОВАТЕЛЕЙ (для отслеживания активности) ===
+// === СЕССИИ ПОЛЬЗОВАТЕЛЕЙ ===
 model UserSession {
   id        String   @id @default(cuid())
   userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token     String   @unique
   ipAddress String
-  userAgent String
+  userAgent String   @db.Text
   expiresAt DateTime
   createdAt DateTime @default(now())
   lastUsed  DateTime @updatedAt
   
   @@index([userId])
   @@index([token])
+  @@index([expiresAt])
+  @@map("user_sessions")
 }
