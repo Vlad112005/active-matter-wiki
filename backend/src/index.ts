@@ -64,17 +64,13 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 const server = app.listen(port, () => {
-  console.log(`
-🚀 Server running on http://localhost:${port}`);
+  console.log(`\n🚀 Server running on http://localhost:${port}`);
   console.log(`📚 API Docs: http://localhost:${port}/api/docs`);
-  console.log(`🌐 CORS enabled for: ${clientUrl}
-`);
+  console.log(`🌐 CORS enabled for: ${clientUrl}\n`);
 });
 
 process.on('SIGINT', async () => {
-  console.log('
-
-📋 Shutting down gracefully...');
+  console.log('\n\n📋 Shutting down gracefully...');
   server.close(() => {
     console.log('✅ Server closed');
     process.exit(0);
