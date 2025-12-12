@@ -12,7 +12,7 @@ model User {
   id            String         @id @default(cuid())
   username      String         @unique
   email         String         @unique
-  password      String         // Зашифрован bcrypt
+  password      String
   avatar        String?
   bio           String?
   discordId     String?        @unique
@@ -43,11 +43,11 @@ model User {
 
 model Role {
   id          String   @id @default(cuid())
-  name        String   @unique  // 'founder', 'admin', 'moderator', 'content_manager', 'user'
+  name        String   @unique
   displayName String
   description String?
   permissions Json     @default("{}")
-  priority    Int      @default(0)  // Чем выше, тем больше прав
+  priority    Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
@@ -95,7 +95,6 @@ model Item {
   @@index([monolithLevel])
   @@index([isPublished])
   @@index([name])
-  @@fulltext([name, description])
   @@map("items")
 }
 
@@ -165,7 +164,6 @@ model Location {
   @@index([name])
   @@index([dangerLevel])
   @@index([isPublished])
-  @@fulltext([name, description])
   @@map("locations")
 }
 
@@ -197,7 +195,6 @@ model Guide {
   @@index([published])
   @@index([slug])
   @@index([category])
-  @@fulltext([title, content])
   @@map("guides")
 }
 
@@ -249,7 +246,7 @@ model Favorite {
   locationId String?
   location   Location? @relation(fields: [locationId], references: [id], onDelete: Cascade)
   
-  type       String    // 'item', 'guide', 'location'
+  type       String
   createdAt  DateTime  @default(now())
   
   @@unique([userId, itemId])
@@ -268,7 +265,7 @@ model Patch {
   titleEn     String?
   content     String   @db.Text
   contentEn   String?  @db.Text
-  type        String[] // ['new', 'changed', 'fixed', 'removed']
+  type        String[]
   published   Boolean  @default(false)
   publishedAt DateTime?
   createdAt   DateTime @default(now())
@@ -285,9 +282,9 @@ model SiteSettings {
   id          String   @id @default(cuid())
   key         String   @unique
   value       String   @db.Text
-  category    String   // 'general', 'seo', 'analytics', 'legal', 'social'
+  category    String
   description String?  @db.Text
-  accessLevel String   @default("admin") // 'founder', 'admin', 'moderator'
+  accessLevel String   @default("admin")
   updatedAt   DateTime @updatedAt
   updatedBy   String?
   
@@ -300,7 +297,7 @@ model SiteSettings {
 // === ЮРИДИЧЕСКИЕ ДОКУМЕНТЫ ===
 model LegalDocument {
   id          String   @id @default(cuid())
-  type        String   @unique // 'terms', 'privacy', 'cookies', 'gdpr'
+  type        String   @unique
   title       String
   titleEn     String?
   content     String   @db.Text
@@ -322,7 +319,7 @@ model LegalDocument {
 model UserConsent {
   id           String   @id @default(cuid())
   userId       String
-  consentType  String   // 'privacy', 'terms', 'cookies', 'marketing'
+  consentType  String
   version      String
   accepted     Boolean  @default(true)
   ipAddress    String?
@@ -339,7 +336,7 @@ model Session {
   id        String   @id @default(cuid())
   userId    String
   token     String   @unique
-  type      String   // 'password_reset', '2fa', 'email_verification'
+  type      String
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -355,8 +352,8 @@ model ActivityLog {
   id        String   @id @default(cuid())
   userId    String?
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  action    String   // 'LOGIN', 'CREATE_ITEM', 'UPDATE_ITEM', 'DELETE_ITEM', etc
-  entity    String   // 'User', 'Item', 'Guide', etc
+  action    String
+  entity    String
   entityId  String?
   ipAddress String?
   userAgent String?  @db.Text
