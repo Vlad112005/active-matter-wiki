@@ -12,17 +12,21 @@ model User {
   id            String    @id @default(cuid())
   username      String    @unique
   email         String    @unique
-  password      String
+  password      String    // Зашифрована bcrypt в коде
   avatar        String?
   bio           String?
   discordId     String?   @unique
   isPremium     Boolean   @default(false)
   premiumUntil  DateTime?
   createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   roleId        String?
   role          Role?     @relation(fields: [roleId], references: [id])
   guides        Guide[]
   comments      Comment[]
+  
+  @@index([email])
+  @@index([roleId])
 }
 
 model Role {
@@ -43,8 +47,8 @@ model Item {
   image              String?
   type               String
   rarity             String
-  price              Int               @default(0)          // КРЕДИТЫ (основная валюта для покупки предметов)
-  crystalPrice       Int               @default(0)          // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (редкие предметы)
+  price              Int               @default(0)
+  crystalPrice       Int               @default(0)
   replicationPoints  Int               @default(0)
   monolithLevel      String?
   weight             Float             @default(0)
@@ -60,6 +64,10 @@ model Item {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   monolithUnlocks    MonolithUnlock[]
+  
+  @@index([type])
+  @@index([rarity])
+  @@index([monolithLevel])
 }
 
 // === МОНОЛИТ ===
@@ -69,8 +77,8 @@ model MonolithLevel {
   order              Int              @unique
   name               String
   nameEn             String?
-  requiredTokens     Int?             // ЖЕТОНЫ МОНОЛИТА (для открытия уровня)
-  requiredCrystals   Int?             // КРИСТАЛЛЫ АКТИВНОЙ МАТЕРИИ (доп. требование для открытия уровня)
+  requiredTokens     Int?
+  requiredCrystals   Int?
   unlocks            MonolithUnlock[]
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -80,12 +88,12 @@ model MonolithUnlock {
   id              String         @id @default(cuid())
   monolithLevelId String
   monolithLevel   MonolithLevel  @relation(fields: [monolithLevelId], references: [id], onDelete: Cascade)
-  type            String         // item, upgrade, recipe, chrono
+  type            String
   itemId          String?
   item            Item?          @relation(fields: [itemId], references: [id], onDelete: Cascade)
   upgradeName     String?
   upgradeNameEn   String?
-  upgradeCost     Int?           // КРЕДИТЫ (стоимость улучшения)
+  upgradeCost     Int?
   recipeName      String?
   recipeNameEn    String?
   chronoName      String?
@@ -93,6 +101,9 @@ model MonolithUnlock {
   isLocked        Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  
+  @@index([monolithLevelId])
+  @@index([itemId])
 }
 
 // === ЛОКАЦИИ ===
@@ -126,6 +137,10 @@ model Guide {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   comments    Comment[]
+  
+  @@index([authorId])
+  @@index([published])
+  @@index([slug])
 }
 
 model Comment {
@@ -138,9 +153,12 @@ model Comment {
   rating    Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([guideId])
+  @@index([authorId])
 }
 
-// === НОВОСТИ/ПАТЧИ ===
+// === ПАТЧИ ===
 model Patch {
   id          String   @id @default(cuid())
   version     String   @unique
@@ -151,6 +169,8 @@ model Patch {
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([publishedAt])
 }
 
 // === НАСТРОЙКИ ===
@@ -161,15 +181,51 @@ model SiteSettings {
   description String?
   updatedAt   DateTime @updatedAt
   updatedBy   String?
+  
+  @@index([key])
 }
 
-// === АУДИТ ===
-model AuditLog {
+// === СЕССИИ (для восстановления пароля и 2FA) ===
+model Session {
   id        String   @id @default(cuid())
   userId    String
-  action    String
-  entity    String
-  entityId  String
+  token     String   @unique
+  type      String   // 'password_reset', '2fa', 'email_verification'
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+}
+
+// === ЛОГИРОВАНИЕ АКТИВНОСТИ (для аудита) ===
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String   // 'LOGIN', 'CREATE_ITEM', 'UPDATE_ITEM', 'DELETE_ITEM', etc
+  entity    String   // 'User', 'Item', 'Guide', etc
+  entityId  String?
+  ipAddress String?
+  userAgent String?
   changes   Json?
   createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// === СЕССИИ ПОЛЬЗОВАТЕЛЕЙ (для отслеживания активности) ===
+model UserSession {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  ipAddress String
+  userAgent String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  lastUsed  DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([token])
 }
