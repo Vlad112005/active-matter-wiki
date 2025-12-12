@@ -1,18 +1,35 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting seed...');
 
-  // 1. Роли
-  await prisma.role.upsert({ where: { name: 'founder' }, update: {}, create: { name: 'founder', displayName: 'Основатель', description: 'Полный доступ ко всем функциям' } });
-  await prisma.role.upsert({ where: { name: 'admin' }, update: {}, create: { name: 'admin', displayName: 'Администратор', description: 'Управление контентом и пользователями' } });
+  // 1. РОЛИ
+  const founderRole = await prisma.role.upsert({ where: { name: 'founder' }, update: {}, create: { name: 'founder', displayName: 'Основатель', description: 'Полный доступ ко всем функциям' } });
+  const adminRole = await prisma.role.upsert({ where: { name: 'admin' }, update: {}, create: { name: 'admin', displayName: 'Администратор', description: 'Управление контентом и пользователями' } });
   await prisma.role.upsert({ where: { name: 'moderator' }, update: {}, create: { name: 'moderator', displayName: 'Модератор', description: 'Модерация гайдов и комментариев' } });
   await prisma.role.upsert({ where: { name: 'user' }, update: {}, create: { name: 'user', displayName: 'Пользователь', description: 'Обычный пользователь' } });
   console.log('✅ Roles created');
 
-  // 2. Уровни монолита
+  // 2. FOUNDER ПОЛЬЗОВАТЕЛЬ
+  const hashedPassword = await bcrypt.hash('ActiveMatter2025!', 12);
+  await prisma.user.upsert({
+    where: { email: 'founder@activematter.wiki' },
+    update: {},
+    create: {
+      username: 'Founder',
+      email: 'founder@activematter.wiki',
+      password: hashedPassword,
+      avatar: null,
+      bio: 'Основатель Active Matter Wiki',
+      roleId: founderRole.id,
+    },
+  });
+  console.log('✅ Founder user created (email: founder@activematter.wiki, password: ActiveMatter2025!)');
+
+  // 3. УРОВНИ МОНОЛИТА
   const monolithLevels = [
     { code: 'ALPHA', order: 1, name: 'Уровень допуска: АЛЬФА', nameEn: 'Access Level: ALPHA', requiredTokens: 100, requiredCrystals: 0 },
     { code: 'BETA', order: 2, name: 'Уровень допуска: БЕТА', nameEn: 'Access Level: BETA', requiredTokens: 500, requiredCrystals: 200 },
@@ -33,7 +50,7 @@ async function main() {
   }
   console.log('✅ Monolith levels created');
 
-  // 3. ПРЕДМЕТЫ (48 всего)
+  // 4. ПРЕДМЕТЫ (48 всего)
   const items = [
     // === ОРУЖИЕ ===
     { name: 'Glock 19', description: 'Компактный пистолет 9мм', type: 'weapon', rarity: 'common', price: 8500, crystalPrice: 0, monolithLevel: 'ALPHA', weight: 0.85, damage: 25, source: ['Магазин'], tags: ['pistol'] },
@@ -95,10 +112,30 @@ async function main() {
   }
   console.log(`✅ Items created: ${items.length}`);
 
-  console.log('🎉 Seed completed!');
-  console.log('✅ КРЕДИТЫ - для покупки предметов (price)');
-  console.log('✅ КРИСТАЛЛЫ АМ - для редких предметов (crystalPrice) и открытия монолита (requiredCrystals)');
-  console.log('✅ ЖЕТОНЫ МОНОЛИТА - для открытия уровней (requiredTokens)');
+  // 5. ТЕСТОВЫЕ НОВОСТИ
+  await prisma.patch.upsert({
+    where: { version: 'v1.0.0' },
+    update: {},
+    create: {
+      version: 'v1.0.0',
+      title: 'Запуск Active Matter Wiki',
+      titleEn: 'Launch of Active Matter Wiki',
+      content: 'Добро пожаловать в новую эру!',
+      contentEn: 'Welcome to a new era!',
+      publishedAt: new Date(),
+    },
+  });
+  console.log('✅ Sample patches created');
+
+  console.log('\n🎉 Seed completed successfully!');
+  console.log('\n📋 ТЕСТОВЫЕ ДАННЫЕ:');
+  console.log('  ├─ Роли: Founder, Admin, Moderator, User');
+  console.log('  ├─ Founder пользователь:');
+  console.log('  │  ├─ Email: founder@activematter.wiki');
+  console.log('  │  └─ Password: ActiveMatter2025!');
+  console.log('  ├─ Предметы: 48 всего');
+  console.log('  ├─ Уровни монолита: 12 (ALPHA → MU)');
+  console.log('  └─ Новости: 1 sample');
 }
 
 main()
