@@ -16,6 +16,9 @@ import monolithRoutes from './routes/monolith.routes';
 import patchRoutes from './routes/patch.routes';
 import settingsRoutes from './routes/settings.routes';
 import adminRoutes from './routes/admin.routes';
+import profileRoutes from './routes/profile.routes';
+import favoritesRoutes from './routes/favorites.routes';
+import searchRoutes from './routes/search.routes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -56,6 +59,9 @@ app.use('/api/monolith', monolithRoutes);
 app.use('/api/patches', patchRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/profile', profileRoutes);
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/search', searchRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -72,6 +78,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`\n✅ Active Matter Wiki Backend`);
+  console.log(`🚀 Server: http://localhost:${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔐 Routes loaded: /api/*`);
+  console.log(``);
 });

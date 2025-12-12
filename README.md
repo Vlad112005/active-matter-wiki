@@ -1,208 +1,141 @@
-# Active Matter Wiki
+# 🚀 Active Matter Wiki - Полное руководство
 
-**Информационный портал для игры Active Matter** — полный каталог предметов, локаций, гайдов и патчей.
+## ⚖️ Юридическая информация
 
-## Технологии
+✅ **Соответствие законам РФ:**
+- Федеральный закон № 152-ФЗ "О персональных данных" (2025)
+- Федеральный закон № 149-ФЗ "Об информации"
+- Все юридические документы в БД (Политика конфиденциальности, Условия, Cookies)
+
+## ⚙️ Технологии
 
 ### Backend
-- Node.js + Express + TypeScript
-- PostgreSQL + Prisma ORM
-- JWT Authentication + Discord OAuth2
-- Роли: user, premium, moderator, admin, founder
+- Node.js 18+ / TypeScript
+- Express.js
+- Prisma ORM
+- PostgreSQL 15
+- JWT аутентификация
+- Bcrypt шифрование (12 rounds)
 
 ### Frontend
 - React 18 + TypeScript
 - Vite
-- TailwindCSS
-- React Query + Zustand
-- React Router
+- Tailwind CSS
+- React Router v6
+- Axios
+- React Hot Toast
 
-## Быстрый старт
+## 📦 Возможности
 
-### 1. Клонируй репозиторий
+### ✅ Готово:
+- ✅ Полная база предметов (Items)
+- ✅ Система монолита (12 уровней)
+- ✅ Гайды от сообщества
+- ✅ Калькулятор сборок
+- ✅ Новости и патчи
+- ✅ **Advanced Admin Panel** (аналитика, пользователи, настройки, логи)
+- ✅ **Профили пользователей**
+- ✅ **Система избранного/закладок**
+- ✅ **Глобальный поиск** (по всему контенту)
+- ✅ **Яндекс.Метрика** (управление в админке)
+- ✅ Ролевая система (Founder, Admin, Moderator, User)
+- ✅ Activity Logs (логирование всех действий)
+- ✅ Юридические документы (ФЗ-152 РФ)
 
-```bash
-git clone https://github.com/Vlad112005/active-matter-wiki.git
-cd active-matter-wiki
-```
+## 🚀 Быстрый старт
 
-### 2. Backend
+### Шаг 1: Пересборка БД
 
-```bash
+```cmd
 cd backend
-npm install
+git pull origin main
+scripts\rebuild-db.bat
 ```
 
-Создай `.env`:
+### Шаг 2: Запуск Backend
 
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/active_matter_wiki"
-JWT_SECRET="your-super-secret-jwt-key-change-in-production"
-PORT=3001
-CLIENT_URL="http://localhost:5173"
-```
-
-Миграция БД:
-
-```bash
-npx prisma migrate dev --name init
-```
-
-Сиды (роли, предметы, локации, гайды):
-
-```bash
-npx tsx src/database/seeders/seedRoles.ts
-npx tsx src/database/seeders/seedItems.ts
-npx tsx src/database/seeders/seedLocations.ts
-npx tsx src/database/seeders/seedGuides.ts
-npx tsx src/database/seeders/seedPatches.ts
-```
-
-Запуск:
-
-```bash
+```cmd
+cd backend
 npm run dev
 ```
 
-Сервер поднимется на `http://localhost:3001`
+### Шаг 3: Запуск Frontend
 
-### 3. Frontend
-
-```bash
-cd ../frontend
-npm install
-```
-
-Создай `.env`:
-
-```env
-VITE_API_BASE_URL=http://localhost:3001/api/v1
-VITE_APP_TITLE="Active Matter Wiki"
-VITE_APP_DESCRIPTION="Information portal for Active Matter game"
-```
-
-Запуск:
-
-```bash
-npm run dev
-```
-
-Открой `http://localhost:5173`
-
-## Роли и доступ
-
-| Роль | Описание | Права |
-|------|----------|-------|
-| **user** | Обычный пользователь после регистрации | Просмотр контента |
-| **premium** | Пользователь с подпиской | Эксклюзивный контент |
-| **moderator** | Модератор контента | Редактирование гайдов, новостей |
-| **admin** | Администратор | Управление модераторами, добавление предметов |
-| **founder** | Основатель | Полный доступ ко всему |
-
-### Получение роли founder
-
-1. Зарегистрируйся на сайте
-2. Найди своего пользователя в БД:
-   ```sql
-   SELECT * FROM "User" WHERE email = 'твой@email.com';
-   ```
-3. Обнови роль:
-   ```sql
-   UPDATE "User" 
-   SET "roleId" = (SELECT id FROM "Role" WHERE name = 'founder')
-   WHERE email = 'твой@email.com';
-   ```
-
-## API Endpoints
-
-### Auth
-- `POST /api/v1/auth/register` - Регистрация
-- `POST /api/v1/auth/login` - Вход
-- `POST /api/v1/auth/logout` - Выход
-- `GET /api/v1/auth/me` - Профиль
-
-### Items
-- `GET /api/v1/items` - Список предметов
-- `GET /api/v1/items/:id` - Предмет
-- `POST /api/v1/items` - Создать (admin+)
-- `PUT /api/v1/items/:id` - Обновить (admin+)
-- `DELETE /api/v1/items/:id` - Удалить (founder)
-
-### Locations
-- `GET /api/v1/locations` - Список локаций
-- `GET /api/v1/locations/:id` - Локация
-- `POST /api/v1/locations` - Создать (admin+)
-- `PUT /api/v1/locations/:id` - Обновить (admin+)
-- `DELETE /api/v1/locations/:id` - Удалить (founder)
-
-## Структура проекта
-
-```
-active-matter-wiki/
-├── backend/
-│   ├── prisma/
-│   │   └── schema.prisma
-│   ├── src/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   ├── database/
-│   │   │   ├── client.ts
-│   │   │   └── seeders/
-│   │   └── index.ts
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   ├── store/
-│   │   ├── styles/
-│   │   ├── types/
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── index.html
-│   └── package.json
-└── README.md
-```
-
-## Разработка
-
-### Backend
-```bash
-cd backend
-npm run dev     # Запуск с hot-reload
-npm run build   # Сборка
-npm start       # Прод
-```
-
-### Frontend
-```bash
+```cmd
 cd frontend
-npm run dev     # Запуск dev сервера
-npm run build   # Сборка для прода
-npm run preview # Просмотр прод билда
+git pull origin main
+npm run dev
 ```
 
-## Discord OAuth2 (в разработке)
+## 🔑 Доступ
 
-Для полной интеграции Discord OAuth:
+**Founder аккаунт:**
+- Email: `founder@activematter.wiki`
+- Password: `ActiveMatter2025!`
 
-1. Создай приложение на [Discord Developer Portal](https://discord.com/developers/applications)
-2. Добавь redirect URI: `http://localhost:3001/api/v1/discord/callback`
-3. Получи Client ID и Secret
-4. Добавь в `.env`:
-   ```env
-   DISCORD_CLIENT_ID=твой_client_id
-   DISCORD_CLIENT_SECRET=твой_secret
-   DISCORD_REDIRECT_URI=http://localhost:3001/api/v1/discord/callback
-   ```
+**Админ-панель:** http://localhost:5173/admin
 
-## Лицензия
+## 📊 Яндекс.Метрика
 
-MIT
+1. Зайдите в админ-панель
+2. Откройте вкладку "Настройки"
+3. Найдите `YANDEX_METRIKA_ID` в разделе "Аналитика"
+4. Введите ID вашего счётчика
+5. Метрика автоматически подключится!
 
-## Контакты
+## 💾 API эндпоинты
 
-- GitHub: [@Vlad112005](https://github.com/Vlad112005)
-- Репозиторий: [active-matter-wiki](https://github.com/Vlad112005/active-matter-wiki)
+### 🔓 Public
+- `GET /api/items` - Предметы
+- `GET /api/monolith` - Монолит
+- `GET /api/patches` - Новости
+- `GET /api/search?q=query` - Поиск
+- `GET /api/settings/public` - Публичные настройки
+
+### 🔐 Auth Required
+- `GET /api/profile/me` - Мой профиль
+- `GET /api/favorites` - Избранное
+- `POST /api/favorites` - Добавить в избранное
+- `DELETE /api/favorites/:id` - Удалить из избранного
+
+### 🛡️ Admin/Founder Only
+- `GET /api/admin/analytics` - Аналитика
+- `GET /api/admin/users` - Пользователи
+- `GET /api/admin/settings` - Все настройки
+- `PUT /api/admin/settings/:key` - Обновить настройку
+- `GET /api/admin/activity-logs` - Логи активности
+
+## 📝 Логирование
+
+Все действия логируются в `activity_logs`:
+- LOGIN / LOGOUT
+- CREATE_ITEM / UPDATE_ITEM / DELETE_ITEM
+- UPDATE_SETTING
+- UPDATE_USER / DELETE_USER
+- И другие...
+
+## ⚖️ Юридическая информация
+
+### Документы в БД:
+1. **Политика конфиденциальности** (ФЗ-152)
+2. **Пользовательское соглашение**
+3. **Политика cookies**
+
+### Важно:
+- Все документы соответствуют законодательству РФ 2025
+- Шифрование паролей: bcrypt, 12 rounds
+- HTTPS для production
+- Согласия пользователей логируются в `user_consents`
+
+## 🛠️ Поддержка
+
+При вопросах:
+- Email: support@activematter.wiki
+- Discord: [ссылка]
+- Telegram: [ссылка]
+
+---
+
+**Версия:** 1.5.0  
+**Дата:** 12 декабря 2025  
+**Статус:** ✅ Production Ready
