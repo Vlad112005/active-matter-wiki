@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { getPatches, getPatchById, createPatch, updatePatch, deletePatch } from '../controllers/patches';
+import { getPatches, getPatch, createPatch, updatePatch, deletePatch } from '../controllers/patches';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
 
 // Public
 router.get('/', getPatches);
-router.get('/:id', getPatchById);
+router.get('/:id', getPatch);
 
 // Protected
 router.post('/', authenticate, requireRole(['admin', 'founder']), createPatch);

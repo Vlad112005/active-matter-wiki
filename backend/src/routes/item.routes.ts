@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { getItems, getItemById, createItem, updateItem, deleteItem } from '../controllers/items';
+import { getItems, getItem, createItem, updateItem, deleteItem } from '../controllers/items';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
 
 // Public
 router.get('/', getItems);
-router.get('/:id', getItemById);
+router.get('/:id', getItem);
 
 // Protected
 router.post('/', authenticate, requireRole(['admin', 'founder']), createItem);

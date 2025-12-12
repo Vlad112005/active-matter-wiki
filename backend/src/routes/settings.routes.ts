@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getPublicSettings, getAllSettings, updateSetting } from '../controllers/settings';
+import { getPublicSettings, getSettings, updateSetting } from '../controllers/settings';
 import { authenticate, requireRole } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -8,7 +8,7 @@ const router = Router();
 router.get('/public', getPublicSettings);
 
 // Protected
-router.get('/', authenticate, requireRole(['admin', 'founder']), getAllSettings);
+router.get('/', authenticate, requireRole(['admin', 'founder']), getSettings);
 router.put('/:key', authenticate, requireRole(['admin', 'founder']), updateSetting);
 
 export default router;
